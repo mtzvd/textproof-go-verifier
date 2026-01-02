@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"blockchain-verifier/internal/blockchain"
+	"blockchain-verifier/internal/viewmodels"
 	"blockchain-verifier/web/templates"
 
 	"github.com/a-h/templ"
@@ -83,7 +84,26 @@ func (api *API) renderHTML(w http.ResponseWriter, r *http.Request, component tem
 
 // Тогда обработчики будут выглядеть так:
 func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
-	api.renderHTML(w, r, templates.Home())
+	allBlocks := api.blockchain.GetAllBlocks()
+
+	authors := make(map[string]bool)
+	var lastAdded time.Time
+
+	for _, block := range allBlocks {
+		authors[block.Data.AuthorName] = true
+		if block.Timestamp.After(lastAdded) {
+			lastAdded = block.Timestamp
+		}
+	}
+
+	stats := viewmodels.StatsResponse{
+		TotalBlocks:   len(allBlocks),
+		UniqueAuthors: len(authors),
+		LastAdded:     lastAdded,
+		ChainValid:    api.blockchain.ValidateChain(),
+	}
+
+	api.renderHTML(w, r, templates.Home(stats))
 }
 
 func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +116,7 @@ func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 
 // handleDeposit обрабатывает запрос на депонирование текста
 func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
-	var req DepositRequest
+	var req viewmodels.DepositRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		api.sendError(w, http.StatusBadRequest, "Неверный формат запроса", err)
 		return
@@ -139,7 +159,7 @@ func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
 	badgeURL := fmt.Sprintf("%s/api/badge/%s", baseURL, block.ID)
 
 	// Формируем ответ
-	resp := DepositResponse{
+	resp := viewmodels.DepositResponse{
 		ID:        block.ID,
 		Hash:      block.Hash,
 		Timestamp: block.Timestamp,
@@ -161,7 +181,7 @@ func (api *API) handleVerifyByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := VerificationResponse{
+	resp := viewmodels.VerificationResponse{
 		Found:     true,
 		BlockID:   block.ID,
 		Author:    block.Data.AuthorName,
@@ -176,7 +196,7 @@ func (api *API) handleVerifyByID(w http.ResponseWriter, r *http.Request) {
 
 // handleVerifyByText обрабатывает проверку по тексту
 func (api *API) handleVerifyByText(w http.ResponseWriter, r *http.Request) {
-	var req VerifyByTextRequest
+	var req viewmodels.VerifyByTextRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		api.sendError(w, http.StatusBadRequest, "Неверный формат запроса", err)
 		return
@@ -197,14 +217,14 @@ func (api *API) handleVerifyByText(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if foundBlock == nil {
-		resp := VerificationResponse{
+		resp := viewmodels.VerificationResponse{
 			Found: false,
 		}
 		api.sendJSON(w, http.StatusOK, resp)
 		return
 	}
 
-	resp := VerificationResponse{
+	resp := viewmodels.VerificationResponse{
 		Found:     true,
 		BlockID:   foundBlock.ID,
 		Author:    foundBlock.Data.AuthorName,
@@ -232,7 +252,7 @@ func (api *API) handleStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp := StatsResponse{
+	resp := viewmodels.StatsResponse{
 		TotalBlocks:   len(allBlocks),
 		UniqueAuthors: len(authors),
 		LastAdded:     lastAdded,
@@ -246,7 +266,7 @@ func (api *API) handleStats(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleBlockchainInfo(w http.ResponseWriter, r *http.Request) {
 	info := api.blockchain.GetChainInfo()
 
-	resp := BlockchainInfoResponse{
+	resp := viewmodels.BlockchainInfoResponse{
 		Length:     info["length"].(int),
 		Difficulty: info["difficulty"].(int),
 		Valid:      info["valid"].(bool),
@@ -320,7 +340,7 @@ func (api *API) sendJSON(w http.ResponseWriter, status int, data interface{}) {
 
 // sendError отправляет ошибку в формате JSON
 func (api *API) sendError(w http.ResponseWriter, status int, message string, err error) {
-	resp := ErrorResponse{
+	resp := viewmodels.ErrorResponse{
 		Error: message,
 	}
 

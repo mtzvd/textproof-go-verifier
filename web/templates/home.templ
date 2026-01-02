@@ -1,12 +1,17 @@
 package templates 
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/internal/viewmodels"
 
-templ Home() {
-	@Base("Главная", HomeContent())
+
+
+
+
+templ Home(stats viewmodels.StatsResponse) {
+	@Base("Главная", HomeContent(stats))
 }
 
-templ HomeContent() {
+templ HomeContent(stats viewmodels.StatsResponse) {
 	<div class="columns is-centered">
 		<div class="column is-two-thirds">
 			<!-- Герой секция -->
@@ -40,26 +45,7 @@ templ HomeContent() {
 				},
 			})
 			<!-- Статистика -->
-			@components.StatsSection([]components.StatsCardParams{
-				{
-					Icon:     "fas fa-file-alt",
-					Title:    "Всего текстов",
-					Subtitle: "Зафиксированных документов",
-					Value:    "0",
-				},
-				{
-					Icon:     "fas fa-users",
-					Title:    "Уникальных авторов",
-					Subtitle: "Авторов зарегистрировано",
-					Value:    "0",
-				},
-				{
-					Icon:     "fas fa-calendar-check",
-					Title:    "Последнее депонирование",
-					Subtitle: "Дата и время последней фиксации",
-					Value:    "2026-01-02 15:04:05",
-				},
-			})
+			@components.StatsSection(viewmodels.BuildStatsCards(stats))
 			<!-- Как это работает -->
 			@components.HowItWorksSection(components.HowItWorksSectionParams{
 				Title: "Как это работает",

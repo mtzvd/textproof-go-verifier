@@ -9,8 +9,9 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/internal/viewmodels"
 
-func Home() templ.Component {
+func Home(stats viewmodels.StatsResponse) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +32,7 @@ func Home() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Base("Главная", HomeContent()).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base("Главная", HomeContent(stats)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +40,7 @@ func Home() templ.Component {
 	})
 }
 
-func HomeContent() templ.Component {
+func HomeContent(stats viewmodels.StatsResponse) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -106,26 +107,7 @@ func HomeContent() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.StatsSection([]components.StatsCardParams{
-			{
-				Icon:     "fas fa-file-alt",
-				Title:    "Всего текстов",
-				Subtitle: "Зафиксированных документов",
-				Value:    "0",
-			},
-			{
-				Icon:     "fas fa-users",
-				Title:    "Уникальных авторов",
-				Subtitle: "Авторов зарегистрировано",
-				Value:    "0",
-			},
-			{
-				Icon:     "fas fa-calendar-check",
-				Title:    "Последнее депонирование",
-				Subtitle: "Дата и время последней фиксации",
-				Value:    "2026-01-02 15:04:05",
-			},
-		}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.StatsSection(viewmodels.BuildStatsCards(stats)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

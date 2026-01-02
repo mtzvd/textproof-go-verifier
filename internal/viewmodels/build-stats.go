@@ -1,0 +1,35 @@
+package viewmodels
+
+import (
+	"strconv"
+
+	"blockchain-verifier/web/templates/components"
+)
+
+func BuildStatsCards(stats StatsResponse) []components.StatsCardParams {
+	last := "—"
+	if !stats.LastAdded.IsZero() {
+		last = stats.LastAdded.Format("02.01.2006 15:04")
+	}
+
+	return []components.StatsCardParams{
+		{
+			Icon:     "fas fa-file-alt",
+			Title:    "Всего текстов",
+			Value:    strconv.Itoa(stats.TotalBlocks),
+			Subtitle: "Зафиксированных документов",
+		},
+		{
+			Icon:     "fas fa-users",
+			Title:    "Уникальных авторов",
+			Value:    strconv.Itoa(stats.UniqueAuthors),
+			Subtitle: "Авторов зарегистрировано",
+		},
+		{
+			Icon:     "fas fa-calendar-check",
+			Title:    "Последнее депонирование",
+			Value:    last,
+			Subtitle: "Дата и время последней фиксации",
+		},
+	}
+}
