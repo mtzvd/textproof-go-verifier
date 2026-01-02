@@ -1,0 +1,96 @@
+package templates 
+
+import "blockchain-verifier/web/templates/components"
+
+templ Home() {
+	@Base("Главная", HomeContent())
+}
+
+templ HomeContent() {
+	<div class="columns is-centered">
+		<div class="column is-two-thirds">
+			<!-- Герой секция -->
+			@components.HeroSection(components.HeroSectionParams{
+				Title:    "TextProof",
+				Subtitle: "Система доказательства авторства текстов с использованием блокчейн-технологии",
+				Icon:     "fas fa-fingerprint",
+			})
+			<!-- Карточки возможностей -->
+			@components.FeatureCardsSection([]components.FeatureCardParams{
+				{
+					Icon:        "fas fa-upload",
+					Title:       "Депонирование",
+					Description: "Зафиксируйте авторство вашего текста в блокчейне. Получите уникальный идентификатор для доказательства.",
+					Link:        "/deposit",
+					LinkText:    "Депонировать",
+				},
+				{
+					Icon:        "fas fa-search",
+					Title:       "Проверка",
+					Description: "Проверьте подлинность текста по идентификатору. Убедитесь, что текст не изменялся после фиксации.",
+					Link:        "/verify",
+					LinkText:    "Проверить",
+				},
+				{
+					Icon:        "fas fa-shield-alt",
+					Title:       "Безопасность",
+					Description: "Используем технологию блокчейн для гарантии неизменности. Все записи защищены криптографически.",
+					Link:        "/about",
+					LinkText:    "Подробнее",
+				},
+			})
+			<!-- Статистика -->
+			@components.StatsSection([]components.StatsCardParams{
+				{
+					Icon:     "fas fa-file-alt",
+					Title:    "Всего текстов",
+					Subtitle: "Зафиксированных документов",
+					Value:    "0",
+				},
+				{
+					Icon:     "fas fa-users",
+					Title:    "Уникальных авторов",
+					Subtitle: "Авторов зарегистрировано",
+					Value:    "0",
+				},
+				{
+					Icon:     "fas fa-calendar-check",
+					Title:    "Последнее депонирование",
+					Subtitle: "Дата и время последней фиксации",
+					Value:    "2026-01-02 15:04:05",
+				},
+			})
+			<!-- Как это работает -->
+			@components.HowItWorksSection(components.HowItWorksSectionParams{
+				Title: "Как это работает",
+				Steps: []components.HowItWorksStep{
+					{
+						Number: 1,
+						Title:  "Вставляете текст",
+						Text:   "Вы загружаете свой текст в систему. Система автоматически вычисляет уникальный криптографический хеш.",
+					},
+					{
+						Number: 2,
+						Title:  "Получаете ID",
+						Text:   "Система генерирует уникальный идентификатор и временную метку фиксации.",
+					},
+					{
+						Number: 3,
+						Title:  "Запись в блокчейн",
+						Text:   "Хеш вашего текста записывается в блокчейн вместе с временной меткой, что гарантирует неизменность.",
+					},
+					{
+						Number: 4,
+						Title:  "Проверка",
+						Text:   "Позже вы или другие могут проверить, что текст не изменялся с момента фиксации.",
+					},
+				},
+				NoteTitle: "Важно",
+				NoteText: []string{
+					"Система не хранит ваш текст. Только его криптографический отпечаток (хеш).",
+					"Это гарантирует конфиденциальность: никто кроме вас не сможет прочитать текст, но все могут проверить его подлинность.",
+				},
+			})
+		</div>
+	</div>
+}

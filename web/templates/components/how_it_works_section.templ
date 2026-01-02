@@ -1,0 +1,19 @@
+package components
+
+type HowItWorksSectionParams struct {
+	Title string
+	Steps []HowItWorksStep
+	NoteTitle string
+	NoteText  []string
+}
+templ HowItWorksSection(props HowItWorksSectionParams) {
+	<div class="box mt-6">
+		<h3 class="title is-3 mb-5">{ props.Title }</h3>
+
+		for _, step := range props.Steps {
+			@HowItWorksStepItem(step)
+		}
+
+		@HowItWorksNote(props.NoteTitle, props.NoteText)
+	</div>
+}

@@ -1,0 +1,9 @@
+package components
+
+templ FeatureCardsSection(cards []FeatureCardParams) {
+	<div class="cards-container">
+		for _, card := range cards {
+			@FeatureCard(card)
+		}
+	</div>
+}

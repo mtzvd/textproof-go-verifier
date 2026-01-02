@@ -1,0 +1,34 @@
+{
+  "chain": [
+    {
+      "id": "000-000-000",
+      "prev_hash": "0",
+      "timestamp": "2025-12-30T23:10:20.1175807+01:00",
+      "data": {
+        "author_name": "Александр Сергеевич Пушкин",
+        "title": "Евгений Онегин",
+        "text_start": "Мой дядя самых честных правил",
+        "text_end": "Иных уж нет, а те далече",
+        "content_hash": "genesis_hash"
+      },
+      "nonce": 0,
+      "hash": "b211cf1ca0fbce4dfd4d024633863d5f5c6b1ae1eae5bf5aba457db2fe369712"
+    },
+    {
+      "id": "000-000-001",
+      "prev_hash": "b211cf1ca0fbce4dfd4d024633863d5f5c6b1ae1eae5bf5aba457db2fe369712",
+      "timestamp": "2025-12-30T23:10:20.1262638+01:00",
+      "data": {
+        "author_name": "Иван Иванов",
+        "title": "Мой первый пост",
+        "text_start": "Это начало моего",
+        "text_end": "конец моего текста",
+        "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "public_key": "ssh-rsa AAAAB3NzaC1yc2E..."
+      },
+      "nonce": 33186,
+      "hash": "00002fef257ad465582731d8929415286d64a137a2918e0adb76438fb034ad2e"
+    }
+  ],
+  "difficulty": 4
+}

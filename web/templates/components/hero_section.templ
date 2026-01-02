@@ -1,0 +1,23 @@
+package components
+
+type HeroSectionParams struct {
+	Title    string
+	Subtitle string
+	Icon     string
+}
+
+templ HeroSection(props HeroSectionParams) {
+	<section class="hero is-info is-bold mb-6">
+		<div class="hero-body">
+			<div class="container">
+				<h1 class="title is-1">
+					<i class={ props.Icon + " mr-3" }></i>
+					{ props.Title }
+				</h1>
+				<h2 class="subtitle">
+					{ props.Subtitle }
+				</h2>
+			</div>
+		</div>
+	</section>
+}

@@ -1,0 +1,413 @@
+package templates
+
+templ Deposit() {
+	@Base("Депонирование текста", DepositContent())
+}
+
+templ DepositContent() {
+	<div class="columns is-centered">
+		<div class="column is-two-thirds">
+			<!-- Заголовок -->
+			<div class="mb-6">
+				<h1 class="title is-2">
+					<i class="fas fa-upload mr-3 is-info has-text-info"></i>
+					Депонирование текста
+				</h1>
+				<p class="subtitle">
+					Зафиксируйте авторство своего текста в блокчейне
+				</p>
+			</div>
+			
+			<!-- Простая форма -->
+			<div class="box">
+				<form id="deposit-form">
+					<!-- Автор -->
+					<div class="field">
+						<label class="label">Автор (ФИО или псевдоним)</label>
+						<div class="control has-icons-left">
+							<input 
+								class="input" 
+								type="text" 
+								id="author" 
+								placeholder="Иванов Иван Иванович"
+								required
+							>
+							<span class="icon is-small is-left">
+								<i class="fas fa-user"></i>
+							</span>
+						</div>
+						<p class="help">Имя, под которым будет зафиксировано авторство</p>
+					</div>
+					
+					<!-- Название -->
+					<div class="field">
+						<label class="label">Название произведения</label>
+						<div class="control has-icons-left">
+							<input 
+								class="input" 
+								type="text" 
+								id="title" 
+								placeholder="Моя статья о блокчейне"
+								required
+							>
+							<span class="icon is-small is-left">
+								<i class="fas fa-heading"></i>
+							</span>
+						</div>
+						<p class="help">Краткое название или заголовок</p>
+					</div>
+					
+					<!-- Текст -->
+					<div class="field">
+						<label class="label">Текст</label>
+						<div class="control">
+							<textarea 
+								class="textarea" 
+								id="text" 
+								placeholder="Введите ваш текст здесь..."
+								rows="10"
+								required
+							></textarea>
+						</div>
+						<p class="help" id="text-length">Длина текста: 0 символов</p>
+					</div>
+					
+					<!-- Публичный ключ (опционально) -->
+					<div class="field">
+						<label class="label">
+							Публичный ключ для подписи (опционально)
+							<span class="tag is-light ml-2">Необязательно</span>
+						</label>
+						<div class="control">
+							<textarea 
+								class="textarea" 
+								id="public_key" 
+								placeholder="-----BEGIN PUBLIC KEY-----&#10;Ваш публичный ключ&#10;-----END PUBLIC KEY-----"
+								rows="4"
+							></textarea>
+						</div>
+						<p class="help">Если хотите связать текст с вашей электронной подписью</p>
+					</div>
+					
+					<!-- Важное примечание -->
+					<div class="notification is-warning is-light">
+						<div class="content">
+							<p><strong>Важно:</strong></p>
+							<ul>
+								<li>Система не хранит ваш текст, только его криптографический отпечаток (хеш)</li>
+								<li>Сохраните оригинал текста у себя — он нужен для будущих проверок</li>
+								<li>Процесс депонирования займет несколько секунд (майнинг блока)</li>
+							</ul>
+						</div>
+					</div>
+					
+					<!-- Кнопки (вертикально друг под другом) -->
+					<div class="field">
+						<div class="control">
+							<button 
+								class="button is-info" 
+								type="button"
+								id="submit-btn"
+								onclick="submitForm()"
+							>
+								<i class="fas fa-upload mr-2"></i>
+								Зафиксировать в блокчейне
+							</button>
+						</div>
+					</div>
+					<div class="field">
+						<div class="control">
+							<button 
+								class="button is-light" 
+								type="button"
+								onclick="clearForm()"
+							>
+								Очистить форму
+							</button>
+						</div>
+					</div>
+				</form>
+				
+				<!-- Результат -->
+				<div id="result" class="mt-4"></div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Простой JavaScript -->
+	<script>
+		// Обновление счетчика символов
+		const textarea = document.getElementById('text');
+		const textLength = document.getElementById('text-length');
+		
+		if (textarea && textLength) {
+			textarea.addEventListener('input', function() {
+				textLength.textContent = 'Длина текста: ' + textarea.value.length + ' символов';
+			});
+		}
+		
+		// Очистка формы
+		function clearForm() {
+			document.getElementById('author').value = '';
+			document.getElementById('title').value = '';
+			document.getElementById('text').value = '';
+			document.getElementById('public_key').value = '';
+			document.getElementById('result').innerHTML = '';
+			textLength.textContent = 'Длина текста: 0 символов';
+		}
+		
+		// Отправка формы
+		async function submitForm() {
+			const author = document.getElementById('author').value;
+			const title = document.getElementById('title').value;
+			const text = document.getElementById('text').value;
+			const publicKey = document.getElementById('public_key').value;
+			
+			if (!author || !title || !text) {
+				showError('Заполните все обязательные поля');
+				return;
+			}
+			
+			const submitBtn = document.getElementById('submit-btn');
+			const originalText = submitBtn.innerHTML;
+			
+			// Показываем загрузку
+			submitBtn.classList.add('is-loading');
+			submitBtn.disabled = true;
+			
+			const formData = {
+				author_name: author,
+				title: title,
+				text: text,
+				public_key: publicKey || ''
+			};
+			
+			try {
+				const response = await fetch('/api/deposit', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(formData)
+				});
+				
+				const result = await response.json();
+				
+				if (!response.ok) {
+					throw new Error(result.error || 'Ошибка при депонировании');
+				}
+				
+				// Показываем результат
+				showResult(result, author, title);
+				
+			} catch (error) {
+				showError(error.message);
+			} finally {
+				// Восстанавливаем кнопку
+				submitBtn.classList.remove('is-loading');
+				submitBtn.disabled = false;
+			}
+		}
+		
+		function showResult(data, author, title) {
+			const resultDiv = document.getElementById('result');
+			const id = data.id;
+			const qrcodeUrl = data.qrcode_url;
+
+			resultDiv.innerHTML = `
+				<article class="message is-success">
+					<div class="message-header">
+						<p><i class="fas fa-check-circle mr-2"></i>Текст успешно зафиксирован!</p>
+						<button class="delete" onclick="this.parentElement.parentElement.style.display='none'"></button>
+					</div>
+					<div class="message-body">
+						<!-- ID документа -->
+						<div class="mb-5">
+							<p class="has-text-weight-bold mb-2">Идентификатор документа:</p>
+							<div class="field has-addons">
+								<div class="control is-expanded">
+									<input class="input is-family-monospace" type="text" value="${id}" readonly>
+								</div>
+								<div class="control">
+									<button class="button" onclick="navigator.clipboard.writeText('${id}'); alert('ID скопирован в буфер обмена');">
+										<i class="fas fa-copy"></i>
+									</button>
+								</div>
+							</div>
+							<p class="help">Сохраните этот ID — он понадобится для проверки</p>
+						</div>
+						
+						<!-- QR-код и детали -->
+						<div class="columns">
+							<!-- QR-код слева -->
+							<div class="column is-4">
+								<div class="has-text-centered">
+									<p class="has-text-weight-bold mb-3">QR-код для проверки:</p>
+									<div class="box p-4">
+										<figure class="image is-square">
+											<img src="${qrcodeUrl}" alt="QR Code" class="p-2" style="background: white;">
+										</figure>
+										<div class="mt-3">
+											<div class="buttons are-small is-centered">
+												<a href="${qrcodeUrl}" download="textproof-${id}.png" 
+													class="button is-info is-outlined">
+													<i class="fas fa-download mr-1"></i>
+													Скачать
+												</a>
+												<a href="/verify/${id}" 
+													class="button is-info is-outlined">
+													<i class="fas fa-external-link-alt mr-1"></i>
+													Проверить
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Детали справа -->
+							<div class="column is-8">
+								<!-- Хеш текста -->
+								<div class="notification is-info is-light mb-3">
+									<p class="has-text-weight-bold mb-1">Хеш текста:</p>
+									<div class="field has-addons">
+										<div class="control is-expanded">
+											<input class="input is-family-monospace is-small" 
+												type="text" 
+												value="${data.hash}" 
+												readonly>
+										</div>
+										<div class="control">
+											<button class="button is-small" 
+												onclick="navigator.clipboard.writeText('${data.hash}'); alert('Хеш скопирован');">
+												<i class="fas fa-copy"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+								
+								<!-- Время фиксации -->
+								<div class="notification is-info is-light mb-3">
+									<p class="has-text-weight-bold mb-1">Время фиксации:</p>
+									<p class="title is-6">${new Date(data.timestamp).toLocaleString('ru-RU')}</p>
+								</div>
+								
+								<!-- Ссылка для проверки -->
+								<div class="notification is-info is-light">
+									<p class="has-text-weight-bold mb-1">Ссылка для проверки:</p>
+									<div class="field has-addons">
+										<div class="control is-expanded">
+											<input class="input is-family-monospace is-small" 
+												type="text" 
+												value="${window.location.origin}/verify/${id}" 
+												readonly>
+										</div>
+										<div class="control">
+											<button class="button is-small" 
+												onclick="navigator.clipboard.writeText('${window.location.origin}/verify/${id}'); alert('Ссылка скопирована');">
+												<i class="fas fa-copy"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- Бейдж для сайта -->
+						<hr class="mt-6 mb-5">
+						<h3 class="title is-4 mb-4">Бейдж для сайта</h3>
+						
+						<!-- Предпросмотр бейджа -->
+						<div class="box has-background-info-light mb-5">
+							<p class="has-text-weight-bold mb-3">Предпросмотр бейджа:</p>
+							<div id="badge-preview" class="has-text-centered mb-4">
+								<!-- Бейдж будет вставлен здесь -->
+							</div>
+							
+							<!-- HTML-код бейджа -->
+							<p class="has-text-weight-bold mb-3">HTML-код бейджа:</p>
+							<div class="field">
+								<div class="control">
+									<textarea id="badge-html" class="textarea is-family-monospace" rows="6" readonly></textarea>
+								</div>
+							</div>
+							
+							<!-- Кнопка копирования -->
+							<div class="field">
+								<div class="control">
+									<button class="button is-info" onclick="copyBadgeHtml()">
+										<i class="fas fa-copy mr-2"></i>
+										Скопировать HTML-код бейджа
+									</button>
+								</div>
+							</div>
+						</div>
+						
+						<!-- Кнопки действий -->
+						<div class="buttons is-centered mt-5">
+							<a href="/verify/${id}" class="button is-info is-medium">
+								<i class="fas fa-search mr-2"></i>
+								Проверить этот документ
+							</a>
+							<button class="button is-light" onclick="location.reload()">
+								<i class="fas fa-plus mr-2"></i>
+								Зафиксировать ещё один текст
+							</button>
+						</div>
+					</div>
+				</article>
+			`;
+			
+			// Генерируем и вставляем бейдж
+			const badgeHtml = generateBadgeHtml(id, qrcodeUrl, data.timestamp, author, title);
+			document.getElementById('badge-preview').innerHTML = badgeHtml;
+			document.getElementById('badge-html').value = badgeHtml;
+			
+			// Прокручиваем к результату
+			resultDiv.scrollIntoView({ behavior: 'smooth' });
+		}
+		
+		// Функция генерации HTML-кода бейджа
+		function generateBadgeHtml(id, qrcodeUrl, timestamp, author, title) {
+			const dateStr = new Date(timestamp).toLocaleDateString('ru-RU');
+			
+			// Экранируем HTML-символы в данных пользователя
+			const escapeHtml = (text) => {
+				const map = {
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#039;'
+				};
+				return text.replace(/[&<>"']/g, m => map[m]);
+			};
+			
+			const safeAuthor = escapeHtml(author);
+			const safeTitle = escapeHtml(title);
+			
+			return `<div style="display: inline-block; padding: 1rem; border: 1px solid #3273dc; border-radius: 5px; font-family: sans-serif; max-width: 300px; text-align: center; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <p style="margin: 0 0 0.5rem 0; font-weight: bold; font-size: 1rem; color: #3273dc;">${safeTitle}</p>
+  <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;"><strong>Автор:</strong> ${safeAuthor}</p>
+  <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;"><strong>ID:</strong> ${id}</p>
+  <img src="${qrcodeUrl}" alt="QR Code для проверки" style="max-width: 100px; margin: 0.5rem 0;">
+  <p style="margin: 0; font-size: 0.8rem; color: #666;"><strong>Зафиксировано:</strong> ${dateStr}</p>
+  <p style="margin: 0.5rem 0 0 0; font-size: 0.7rem; color: #999;">Проверено в TextProof</p>
+</div>`.trim();
+		}
+		
+		// Функция копирования HTML-кода бейджа
+		function copyBadgeHtml() {
+			const badgeHtmlTextarea = document.getElementById('badge-html');
+			badgeHtmlTextarea.select();
+			document.execCommand('copy');
+			alert('HTML-код бейджа скопирован в буфер обмена');
+		}
+		
+		function showError(message) {
+			const resultDiv = document.getElementById('result');
+			resultDiv.innerHTML = '<article class="message is-danger"><div class="message-body"><i class="fas fa-exclamation-triangle mr-2"></i>' + message + '</div></article>';
+			resultDiv.scrollIntoView({ behavior: 'smooth' });
+		}
+	</script>
+}

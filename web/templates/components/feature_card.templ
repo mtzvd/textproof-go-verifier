@@ -1,0 +1,30 @@
+package components
+
+type FeatureCardParams struct {
+	Icon        string
+	Title       string
+	Description string
+	Link        string
+	LinkText    string
+}
+templ FeatureCard(props FeatureCardParams) {
+    <div class="card mb-5">
+        <div class="card-content">
+            <div class="is-flex is-align-items-center mb-4">
+                <div class="mr-3 is-flex-shrink-0">
+                    <span class="icon is-large has-text-info">
+                        <i class={ props.Icon + " fa-2x" }></i>
+                    </span>
+                </div>
+                <p class="title is-4 is-marginless">{ props.Title }</p>
+            </div>
+            <div class="content mb-4">
+                { props.Description }
+            </div>
+            <a href={ props.Link } class="button is-info">
+                <i class="fas fa-arrow-right mr-2"></i>
+                { props.LinkText }
+            </a>
+        </div>
+    </div>
+}

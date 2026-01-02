@@ -1,0 +1,27 @@
+package components
+
+type HowItWorksStep struct {
+	Number int
+	Title  string
+	Text   string
+}
+
+templ HowItWorksStepItem(step HowItWorksStep) {
+	<div class="media mb-5">
+		<div class="media-left">
+			<div
+				class="has-background-info has-text-dark is-size-4 has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
+				style="width: 3rem; height: 3rem; border-radius: 50%;"
+			>
+				{ step.Number }
+			</div>
+		</div>
+
+		<div class="media-content">
+			<div class="content">
+				<p class="title is-5 mb-1">{ step.Title }</p>
+				<p class="subtitle is-6">{ step.Text }</p>
+			</div>
+		</div>
+	</div>
+}

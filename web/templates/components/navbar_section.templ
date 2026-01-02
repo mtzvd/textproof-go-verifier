@@ -1,0 +1,49 @@
+package components
+
+templ NavBarSection(items []NavBarItem) {
+	<nav
+		class="navbar is-info"
+		role="navigation"
+		aria-label="main navigation"
+		x-data="{ open: false }"
+	>
+		<div class="navbar-brand">
+			<a class="navbar-item" href="/">
+				<i class="fas fa-fingerprint mr-2"></i>
+				<strong>TextProof</strong>
+			</a>
+
+			<a
+				role="button"
+				class="navbar-burger"
+				:class="{ 'is-active': open }"
+				@click="open = !open"
+				aria-label="menu"
+				aria-expanded="false"
+			>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+			</a>
+		</div>
+
+		<div class="navbar-menu" :class="{ 'is-active': open }">
+			<div class="navbar-start">
+				for _, item := range items {
+					if item.Align != "end" {
+						@NavBarItemComponent(item)
+					}
+				}
+			</div>
+
+			<div class="navbar-end">
+				for _, item := range items {
+					if item.Align == "end" {
+						@NavBarItemComponent(item)
+					}
+				}
+			</div>
+		</div>
+	</nav>
+}
+

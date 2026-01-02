@@ -1,0 +1,72 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+
+templ Base(title string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="ru" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - TextProof</title>
+			<!-- Bulma CSS -->
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"/>
+			<!-- Font Awesome -->
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+			<!-- Alpine.js -->
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<!-- Custom CSS -->
+			<link rel="stylesheet" href="/static/css/styles.css"/>
+			<!-- Favicon -->
+			<link rel="icon" type="image/svg+xml" href="/static/favicon.svg"/>
+		</head>
+		<body>
+			<!-- Навигация -->
+			@components.NavBarSection([]components.NavBarItem{
+				{
+					Label: "Главная",
+					Href:  "/",
+					Icon:  "fas fa-home",
+				},
+				{
+					Label: "Депонировать текст",
+					Href:  "/deposit",
+					Icon:  "fas fa-upload",
+				},
+				{
+					Label: "Проверить",
+					Href:  "/verify",
+					Icon:  "fas fa-search",
+				},
+				{
+					Label: "API Docs",
+					Href:  "/api/docs",
+					Icon:  "fas fa-book",
+					Align: "end",
+				},
+			})
+			<!-- Основное содержимое -->
+			<section class="section">
+				<div class="container">
+					@content
+				</div>
+			</section>
+			<!-- Футер -->
+			<footer class="footer">
+				<div class="content has-text-centered">
+					<p>
+						<strong>TextProof</strong> — система доказательства авторства текстов.
+						<br/>
+						Использует технологию блокчейн для гарантии неизменности.
+					</p>
+					<p class="mt-3">
+						<a href="/about" class="mr-3">О проекте</a>
+						<a href="/privacy" class="mr-3">Конфиденциальность</a>
+						<a href="/terms">Условия использования</a>
+					</p>
+				</div>
+			</footer>
+			
+		</body>
+	</html>
+}
