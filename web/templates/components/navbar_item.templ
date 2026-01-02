@@ -1,29 +1,16 @@
 package components
 
-type NavBarItem struct {
-	Label string
-	Href  string
-	Icon  string
-	Align string // "start" | "end"
-}
-
 templ NavBarItemComponent(item NavBarItem) {
-	if item.Align == "end" {
-		<div class="navbar-item">
-			<a class="button is-light" href={ item.Href }>
-				if item.Icon != "" {
-					<i class={ item.Icon + " mr-2" }></i>
-				}
-				{ item.Label }
-			</a>
-		</div>
-	} else {
-		<a class="navbar-item" href={ item.Href }>
-			if item.Icon != "" {
-				<i class={ item.Icon + " mr-2" }></i>
-			}
-			{ item.Label }
-		</a>
-	}
+    <a
+        class={
+            "navbar-item",
+            templ.KV("is-active", item.Active),
+        }
+        href={ item.Href }
+    >
+        if item.Icon != "" {
+            <i class={ item.Icon + " mr-2" }></i>
+        }
+        { item.Label }
+    </a>
 }
-

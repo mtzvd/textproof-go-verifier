@@ -14,6 +14,7 @@ import (
 	"blockchain-verifier/internal/blockchain"
 	"blockchain-verifier/internal/viewmodels"
 	"blockchain-verifier/web/templates"
+	"blockchain-verifier/web/templates/components"
 
 	"github.com/a-h/templ"
 	"github.com/gorilla/mux"
@@ -84,6 +85,7 @@ func (api *API) renderHTML(w http.ResponseWriter, r *http.Request, component tem
 
 // Тогда обработчики будут выглядеть так:
 func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
+	// собираем статистику
 	allBlocks := api.blockchain.GetAllBlocks()
 
 	authors := make(map[string]bool)
@@ -103,15 +105,50 @@ func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
 		ChainValid:    api.blockchain.ValidateChain(),
 	}
 
-	api.renderHTML(w, r, templates.Home(stats))
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	statCards := mapStatsCards(stats)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Главная",
+			nav,
+			templates.HomeContent(statCards),
+		),
+	)
 }
 
 func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
-	api.renderHTML(w, r, templates.Deposit())
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Депонирование текста",
+			nav,
+			templates.DepositContent(),
+		),
+	)
 }
 
 func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
-	api.renderHTML(w, r, templates.Verify())
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Проверка текста",
+			nav,
+			templates.VerifyContent(),
+		),
+	)
 }
 
 // handleDeposit обрабатывает запрос на депонирование текста
@@ -382,4 +419,23 @@ func extractTextFragment(text string, n int, fromStart bool) string {
 	}
 
 	return strings.Join(words[len(words)-n:], " ")
+}
+
+func mapNavBar(vm viewmodels.NavBar) components.NavBar {
+	items := make([]components.NavBarItem, 0, len(vm.Items))
+
+	for _, it := range vm.Items {
+		items = append(items, components.NavBarItem{
+			Label: it.Label,
+			Href:  it.Href,
+			Icon:  it.Icon,
+			Align: it.Align,
+		})
+	}
+
+	return components.NavBar{
+		Brand: vm.Brand,
+		Icon:  vm.Icon,
+		Items: items,
+	}
 }

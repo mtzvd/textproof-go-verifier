@@ -1,7 +1,7 @@
 package templates
 
 templ Verify() {
-	@Base("Проверка текста", VerifyContent())
+	@VerifyContent()
 }
 
 templ VerifyContent() {
@@ -125,7 +125,7 @@ templ VerifyContent() {
 										<!-- QR-код -->
 										<div class="has-text-centered mt-4">
 											<img 
-												:x-src="'/api/qrcode/' + result.block_id" 
+												:src="'/api/qrcode/' + result.block_id" 
 												alt="QR Code" 
 												class="qrcode-img"
 											>

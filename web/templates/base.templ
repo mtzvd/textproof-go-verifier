@@ -2,7 +2,13 @@ package templates
 
 import "blockchain-verifier/web/templates/components"
 
-templ Base(title string, content templ.Component) {
+
+
+templ Base(
+	title string,
+	nav components.NavBar,
+	content templ.Component,
+) {
 	<!DOCTYPE html>
 	<html lang="ru" data-theme="light">
 		<head>
@@ -22,29 +28,7 @@ templ Base(title string, content templ.Component) {
 		</head>
 		<body>
 			<!-- Навигация -->
-			@components.NavBarSection([]components.NavBarItem{
-				{
-					Label: "Главная",
-					Href:  "/",
-					Icon:  "fas fa-home",
-				},
-				{
-					Label: "Депонировать текст",
-					Href:  "/deposit",
-					Icon:  "fas fa-upload",
-				},
-				{
-					Label: "Проверить",
-					Href:  "/verify",
-					Icon:  "fas fa-search",
-				},
-				{
-					Label: "API Docs",
-					Href:  "/api/docs",
-					Icon:  "fas fa-book",
-					Align: "end",
-				},
-			})
+			@components.NavBarSection(nav)
 			<!-- Основное содержимое -->
 			<section class="section">
 				<div class="container">

@@ -1,12 +1,13 @@
-package viewmodels
+package api
 
 import (
 	"strconv"
 
+	"blockchain-verifier/internal/viewmodels"
 	"blockchain-verifier/web/templates/components"
 )
 
-func BuildStatsCards(stats StatsResponse) []components.StatsCardParams {
+func mapStatsCards(stats viewmodels.StatsResponse) []components.StatsCardParams {
 	last := "—"
 	if !stats.LastAdded.IsZero() {
 		last = stats.LastAdded.Format("02.01.2006 15:04")

@@ -1,6 +1,6 @@
 package components
 
-templ NavBarSection(items []NavBarItem) {
+templ NavBarSection(nav NavBar) {
 	<nav
 		class="navbar is-info"
 		role="navigation"
@@ -9,17 +9,18 @@ templ NavBarSection(items []NavBarItem) {
 	>
 		<div class="navbar-brand">
 			<a class="navbar-item" href="/">
-				<i class="fas fa-fingerprint mr-2"></i>
-				<strong>TextProof</strong>
+				if nav.Icon != "" {
+					<i class={ nav.Icon + " mr-2" }></i>
+				}
+				{ nav.Brand }
 			</a>
 
 			<a
 				role="button"
 				class="navbar-burger"
-				:class="{ 'is-active': open }"
-				@click="open = !open"
 				aria-label="menu"
-				aria-expanded="false"
+				@click="open = !open"
+				:class="{ 'is-active': open }"
 			>
 				<span aria-hidden="true"></span>
 				<span aria-hidden="true"></span>
@@ -29,7 +30,7 @@ templ NavBarSection(items []NavBarItem) {
 
 		<div class="navbar-menu" :class="{ 'is-active': open }">
 			<div class="navbar-start">
-				for _, item := range items {
+				for _, item := range nav.Items {
 					if item.Align != "end" {
 						@NavBarItemComponent(item)
 					}
@@ -37,7 +38,7 @@ templ NavBarSection(items []NavBarItem) {
 			</div>
 
 			<div class="navbar-end">
-				for _, item := range items {
+				for _, item := range nav.Items {
 					if item.Align == "end" {
 						@NavBarItemComponent(item)
 					}
@@ -46,4 +47,3 @@ templ NavBarSection(items []NavBarItem) {
 		</div>
 	</nav>
 }
-

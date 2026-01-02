@@ -1,17 +1,17 @@
 package templates 
 
 import "blockchain-verifier/web/templates/components"
-import "blockchain-verifier/internal/viewmodels"
 
 
 
 
 
-templ Home(stats viewmodels.StatsResponse) {
-	@Base("Главная", HomeContent(stats))
+
+templ Home(statCards []components.StatsCardParams) {
+	@HomeContent(statCards)
 }
 
-templ HomeContent(stats viewmodels.StatsResponse) {
+templ HomeContent(statCards []components.StatsCardParams) {
 	<div class="columns is-centered">
 		<div class="column is-two-thirds">
 			<!-- Герой секция -->
@@ -45,7 +45,7 @@ templ HomeContent(stats viewmodels.StatsResponse) {
 				},
 			})
 			<!-- Статистика -->
-			@components.StatsSection(viewmodels.BuildStatsCards(stats))
+			@components.StatsSection(statCards)
 			<!-- Как это работает -->
 			@components.HowItWorksSection(components.HowItWorksSectionParams{
 				Title: "Как это работает",

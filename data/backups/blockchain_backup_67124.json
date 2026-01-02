@@ -266,20 +266,6 @@
       },
       "nonce": 59533,
       "hash": "000097b71e2526f37f95cef7dcb7ca0d1c51a6b6d439dd7a814cf56527f2acfe"
-    },
-    {
-      "id": "000-000-019",
-      "prev_hash": "000097b71e2526f37f95cef7dcb7ca0d1c51a6b6d439dd7a814cf56527f2acfe",
-      "timestamp": "2026-01-02T22:09:18.8552825+01:00",
-      "data": {
-        "author_name": "длцвароывравдраыдв",
-        "title": "вадлывоаывоаыводаывод",
-        "text_start": "атыдваыдвоаывоаылвоадывоадыво",
-        "text_end": "атыдваыдвоаывоаылвоадывоадыво",
-        "content_hash": "e94e05e3da62e65cccfe3161482914f9f5ecb0924d2f07b1c46e4b8d88260b71"
-      },
-      "nonce": 118124,
-      "hash": "0000afa426cf3da47ac80f916bb156b7d570f8c67e9ed5cc2482eff4e9b83d43"
     }
   ],
   "difficulty": 4
