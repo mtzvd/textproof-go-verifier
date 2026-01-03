@@ -1,8 +1,48 @@
 package components
 
-templ FeatureCardsSection(cards []FeatureCardParams) {
+import "blockchain-verifier/web/templates/components/atoms"
+
+type FeatureCardParams struct {
+	Icon        string
+	Title       string
+	Description string
+	Link        string
+	LinkText    string
+}
+
+type FeatureCardsSectionParams struct {
+	Cards []FeatureCardParams
+}
+
+templ FeatureCard(props FeatureCardParams) {
+    <div class="card mb-5">
+        <div class="card-content">
+            <div class="is-flex is-align-items-center mb-4">
+                <div class="mr-3 is-flex-shrink-0">
+                    <span class="icon is-large has-text-info">
+                        <i class={ props.Icon + " fa-2x" }></i>
+                    </span>
+                </div>
+                <p class="title is-4 is-marginless">{ props.Title }</p>
+            </div>
+            <div class="content mb-4">
+                { props.Description }
+            </div>
+       
+
+            @atoms.Button( atoms.ButtonParams{
+                Icon: "fas fa-arrow-right",
+                Link: props.Link,
+                LinkText: props.LinkText,
+                ButtonType: "is-info",
+            })
+        </div>
+    </div>
+}
+
+templ FeatureCardsSection(props FeatureCardsSectionParams) {
 	<div class="cards-container">
-		for _, card := range cards {
+		for _, card := range props.Cards {
 			@FeatureCard(card)
 		}
 	</div>

@@ -10,8 +10,13 @@ import (
 type Blockchain struct {
 	Chain      []*Block `json:"chain"`
 	Difficulty int      `json:"difficulty"`
-	mu         sync.RWMutex
-	storage    *Storage
+
+	mu sync.RWMutex
+
+	storage *Storage
+
+	// индекс для O(1) проверки дубликатов текста
+	contentHashIndex map[string]*Block
 }
 
 // NewBlockchain создает новую цепочку блоков
@@ -19,6 +24,8 @@ func NewBlockchain(storage *Storage, difficulty int) (*Blockchain, error) {
 	bc := &Blockchain{
 		Difficulty: difficulty,
 		storage:    storage,
+
+		contentHashIndex: make(map[string]*Block),
 	}
 
 	// Пытаемся загрузить существующую цепочку
@@ -43,7 +50,7 @@ func NewBlockchain(storage *Storage, difficulty int) (*Blockchain, error) {
 	} else {
 		// Используем загруженную цепочку
 		bc.Chain = loadedBC.Chain
-
+		bc.rebuildContentHashIndex()
 		// Восстанавливаем из WAL, если он есть
 		if err := bc.recoverFromWAL(); err != nil {
 			// Пытаемся восстановить из бэкапа
@@ -77,8 +84,20 @@ func NewBlockchain(storage *Storage, difficulty int) (*Blockchain, error) {
 			}
 		}
 	}
-
+	bc.rebuildContentHashIndex()
 	return bc, nil
+}
+
+// rebuildContentHashIndex перестраивает индекс хешей содержимого
+func (bc *Blockchain) rebuildContentHashIndex() {
+	bc.contentHashIndex = make(map[string]*Block, len(bc.Chain))
+
+	for _, block := range bc.Chain {
+		// genesis тоже попадёт, это нормально
+		if block != nil && block.Data.ContentHash != "" {
+			bc.contentHashIndex[block.Data.ContentHash] = block
+		}
+	}
 }
 
 // createGenesis создает генезис-блок
@@ -196,6 +215,11 @@ func (bc *Blockchain) GenerateNextID() (string, error) {
 
 // AddBlock добавляет новый блок в цепочку
 func (bc *Blockchain) AddBlock(data DepositData) (*Block, error) {
+	// Проверяем на дубликат
+	if existing, exists := bc.HasContentHash(data.ContentHash); exists {
+		return existing, nil
+	}
+
 	// Генерируем ID для нового блока
 	nextID, err := bc.GenerateNextID()
 	if err != nil {
@@ -222,6 +246,9 @@ func (bc *Blockchain) AddBlock(data DepositData) (*Block, error) {
 
 	// Добавляем блок в цепочку
 	if err := bc.addBlockInternal(block); err != nil {
+		if dup, ok := err.(*DuplicateBlockError); ok {
+			return dup.Block, nil
+		}
 		return nil, err
 	}
 
@@ -243,6 +270,11 @@ func (bc *Blockchain) AddBlock(data DepositData) (*Block, error) {
 func (bc *Blockchain) addBlockInternal(block *Block) error {
 	bc.mu.Lock()
 	defer bc.mu.Unlock()
+
+	// Атомарная проверка дубликата
+	if existing, exists := bc.contentHashIndex[block.Data.ContentHash]; exists {
+		return &DuplicateBlockError{Block: existing}
+	}
 
 	// Проверяем валидность блока
 	if !block.ValidateHash() {
@@ -266,8 +298,10 @@ func (bc *Blockchain) addBlockInternal(block *Block) error {
 		}
 	}
 
-	// Добавляем блок в цепочку
+	// Добавляем блок
 	bc.Chain = append(bc.Chain, block)
+	bc.contentHashIndex[block.Data.ContentHash] = block
+
 	return nil
 }
 
@@ -355,4 +389,13 @@ func (bc *Blockchain) GetBlocksRange(start, end int) ([]*Block, error) {
 	blocks := make([]*Block, end-start)
 	copy(blocks, bc.Chain[start:end])
 	return blocks, nil
+}
+
+// HasContentHash проверяет, существует ли блок с данным хешем содержимого
+func (bc *Blockchain) HasContentHash(hash string) (*Block, bool) {
+	bc.mu.RLock()
+	defer bc.mu.RUnlock()
+
+	block, ok := bc.contentHashIndex[hash]
+	return block, ok
 }

@@ -1,0 +1,18 @@
+package atoms
+
+type ButtonParams struct {
+	Icon     string
+	Link     string
+	LinkText string
+    ButtonType string
+    Attributes templ.Attributes
+
+}
+
+templ Button(props ButtonParams) {
+	<button href={ props.Link } class={ "button "+props.ButtonType } { props.Attributes... }>
+
+		<i class={ props.Icon + " mr-2"}></i>
+		{ props.LinkText }
+	</button>
+}

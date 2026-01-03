@@ -46,6 +46,7 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/verify", api.handleVerifyPage).Methods("GET")
 	api.router.HandleFunc("/verify/{id}", api.handleVerifyPage).Methods("GET")
 	api.router.HandleFunc("/test", api.handleTest).Methods("GET")
+	api.router.HandleFunc("/deposit/result/{id}", api.handleDepositResult).Methods("GET")
 
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
@@ -153,10 +154,16 @@ func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 
 // handleDeposit обрабатывает запрос на депонирование текста
 func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
-	var req viewmodels.DepositRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		api.sendError(w, http.StatusBadRequest, "Неверный формат запроса", err)
+	if err := r.ParseForm(); err != nil {
+		api.sendError(w, http.StatusBadRequest, "Неверные данные формы", err)
 		return
+	}
+
+	req := viewmodels.DepositRequest{
+		AuthorName: r.FormValue("author_name"),
+		Title:      r.FormValue("title"),
+		Text:       r.FormValue("text"),
+		PublicKey:  r.FormValue("public_key"),
 	}
 
 	// Валидация
@@ -190,21 +197,13 @@ func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Генерируем URL для QR-кода и бейджа
-	baseURL := getBaseURL(r)
-	qrcodeURL := fmt.Sprintf("%s/api/qrcode/%s", baseURL, block.ID)
-	badgeURL := fmt.Sprintf("%s/api/badge/%s", baseURL, block.ID)
-
-	// Формируем ответ
-	resp := viewmodels.DepositResponse{
-		ID:        block.ID,
-		Hash:      block.Hash,
-		Timestamp: block.Timestamp,
-		QRCodeURL: qrcodeURL,
-		BadgeURL:  badgeURL,
-	}
-
-	api.sendJSON(w, http.StatusCreated, resp)
+	// Перенаправляем на страницу результата депонирования
+	http.Redirect(
+		w,
+		r,
+		fmt.Sprintf("/deposit/result/%s", block.ID),
+		http.StatusSeeOther,
+	)
 }
 
 // handleVerifyByID обрабатывает проверку по ID
@@ -239,21 +238,18 @@ func (api *API) handleVerifyByText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.TrimSpace(req.Text) == "" {
+		api.sendError(w, http.StatusBadRequest, "Текст не может быть пустым", nil)
+		return
+	}
+
 	// Вычисляем хеш текста
 	hash := sha256.Sum256([]byte(req.Text))
 	contentHash := hex.EncodeToString(hash[:])
 
-	// Ищем блок с таким хешем
-	var foundBlock *blockchain.Block
-	allBlocks := api.blockchain.GetAllBlocks()
-	for _, block := range allBlocks {
-		if block.Data.ContentHash == contentHash {
-			foundBlock = block
-			break
-		}
-	}
-
-	if foundBlock == nil {
+	// O(1) поиск через индекс
+	block, exists := api.blockchain.HasContentHash(contentHash)
+	if !exists {
 		resp := viewmodels.VerificationResponse{
 			Found: false,
 		}
@@ -263,11 +259,11 @@ func (api *API) handleVerifyByText(w http.ResponseWriter, r *http.Request) {
 
 	resp := viewmodels.VerificationResponse{
 		Found:     true,
-		BlockID:   foundBlock.ID,
-		Author:    foundBlock.Data.AuthorName,
-		Title:     foundBlock.Data.Title,
-		Timestamp: foundBlock.Timestamp,
-		Hash:      foundBlock.Data.ContentHash,
+		BlockID:   block.ID,
+		Author:    block.Data.AuthorName,
+		Title:     block.Data.Title,
+		Timestamp: block.Timestamp,
+		Hash:      block.Data.ContentHash,
 		Matches:   true,
 	}
 
@@ -348,17 +344,28 @@ func (api *API) handleBadge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Генерируем HTML бейдж
-	html := fmt.Sprintf(`
-	<div style="display: inline-block; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: sans-serif; max-width: 300px; text-align: center;">
-		<p style="margin: 0 0 10px 0; font-weight: bold;">Автор: %s</p>
-		<p style="margin: 0 0 10px 0; font-size: 0.9em;">ID: %s</p>
-		<p style="margin: 0; font-size: 0.8em; color: #666;">Зафиксировано: %s</p>
-	</div>
-	`, block.Data.AuthorName, block.ID, block.Timestamp.Format("02.01.2006"))
+	// Формируем данные
+	baseURL := getBaseURL(r)
+	qrCodeUrl := fmt.Sprintf("%s/api/qrcode/%s", baseURL, id)
+	verifyUrl := fmt.Sprintf("%s/verify/%s", baseURL, id)
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	// ВАЖНО: правильный Content-Type
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Рендерим templ-компонент
+	err = components.Badge(
+		block.Data.Title,
+		block.Data.AuthorName,
+		block.ID,
+		qrCodeUrl,
+		block.Timestamp.Format("02.01.2006 15:04"),
+		verifyUrl,
+	).Render(r.Context(), w)
+
+	if err != nil {
+		log.Printf("Badge render error: %v", err)
+		http.Error(w, "Failed to render badge", http.StatusInternalServerError)
+	}
 }
 
 // handleNotFound обрабатывает 404 ошибки
@@ -421,6 +428,7 @@ func extractTextFragment(text string, n int, fromStart bool) string {
 	return strings.Join(words[len(words)-n:], " ")
 }
 
+// mapNavBar преобразует viewmodel NavBar в компонент NavBar
 func mapNavBar(vm viewmodels.NavBar) components.NavBar {
 	items := make([]components.NavBarItem, 0, len(vm.Items))
 
@@ -438,4 +446,44 @@ func mapNavBar(vm viewmodels.NavBar) components.NavBar {
 		Icon:  vm.Icon,
 		Items: items,
 	}
+}
+
+// handleDepositResult обрабатывает страницу результата депонирования
+func (api *API) handleDepositResult(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	block, err := api.blockchain.GetBlockByID(id)
+	if err != nil {
+		api.sendError(w, http.StatusNotFound, "Результат депозита не найден", err)
+		return
+	}
+
+	// wasDuplicate можно вычислить по логике:
+	// если ID не последний → дубликат
+	all := api.blockchain.GetAllBlocks()
+	duplicate := all[len(all)-1].ID != block.ID
+
+	vm := viewmodels.DepositResultVM{
+		ID:        block.ID,
+		Title:     block.Data.Title,
+		Author:    block.Data.AuthorName,
+		Hash:      block.Data.ContentHash,
+		Timestamp: block.Timestamp,
+		QRCodeURL: fmt.Sprintf("%s/api/qrcode/%s", getBaseURL(r), block.ID),
+		BadgeURL:  fmt.Sprintf("%s/api/badge/%s", getBaseURL(r), block.ID),
+		VerifyURL: fmt.Sprintf("%s/verify/%s", getBaseURL(r), block.ID),
+		Duplicate: duplicate,
+	}
+
+	nav := mapNavBar(viewmodels.BuildHomeNavBar(r))
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Результат депонирования",
+			nav,
+			templates.DepositResultPage(vm.ID, vm.Hash, vm.Timestamp.Format("2025-12-12 15:03:12"), vm.QRCodeURL, vm.VerifyURL, vm.BadgeURL, vm.Duplicate),
+		),
+	)
 }

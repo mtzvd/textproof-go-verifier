@@ -1,7 +1,35 @@
 
 package components
 
-templ StatsSection(cards []StatsCardParams) {
+type StatsCardParams struct {
+    Icon     string
+    Title    string
+    Subtitle string
+    Value    string
+   
+}
+
+templ StatsCard(props StatsCardParams) {
+    <div class="card mb-5">
+        <div class="card-content">
+            <div class="is-flex is-align-items-center mb-4">
+                <div class="mr-3 is-flex-shrink-0">
+                    <span class="icon is-large has-text-info">
+                        <i class={ props.Icon + " fa-2x" }></i>
+                    </span>
+                </div>
+                <p class="title is-5 is-marginless">{ props.Title }</p>
+            </div>
+            <div class="content has-text-centered">
+                <p class="title is-4 mb-2">{ props.Value}</p>
+                <p class="subtitle is-6">{ props.Subtitle }</p>
+            </div>
+        </div>
+    </div>
+}
+
+
+templ StatsSection(cards  []StatsCardParams) {
 	<div class="box mt-6 has-background-info-light">
 		<h3 class="title is-3 mb-5">Статистика</h3>
 		for _, card := range cards {

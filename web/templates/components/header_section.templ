@@ -1,0 +1,21 @@
+
+package components
+// Параметры заголовка
+type HeaderParams struct {
+    Title string
+    Subtitle string
+    Icon string
+}
+// Заголовок страницы
+templ Header(props HeaderParams) {
+			<header class="mb-6">
+				<h1 class="title is-2">
+					<i class={props.Icon + " mr-3 is-info has-text-info"}></i>
+					{props.Title}
+				</h1> 
+				<p class="subtitle">
+					{props.Subtitle}
+				</p>
+			</header>
+	
+}

@@ -76,27 +76,29 @@ func HomeContent(statCards []components.StatsCardParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.FeatureCardsSection([]components.FeatureCardParams{
-			{
-				Icon:        "fas fa-upload",
-				Title:       "Депонирование",
-				Description: "Зафиксируйте авторство вашего текста в блокчейне. Получите уникальный идентификатор для доказательства.",
-				Link:        "/deposit",
-				LinkText:    "Депонировать",
-			},
-			{
-				Icon:        "fas fa-search",
-				Title:       "Проверка",
-				Description: "Проверьте подлинность текста по идентификатору. Убедитесь, что текст не изменялся после фиксации.",
-				Link:        "/verify",
-				LinkText:    "Проверить",
-			},
-			{
-				Icon:        "fas fa-shield-alt",
-				Title:       "Безопасность",
-				Description: "Используем технологию блокчейн для гарантии неизменности. Все записи защищены криптографически.",
-				Link:        "/about",
-				LinkText:    "Подробнее",
+		templ_7745c5c3_Err = components.FeatureCardsSection(components.FeatureCardsSectionParams{
+			Cards: []components.FeatureCardParams{
+				components.FeatureCardParams{
+					Icon:        "fas fa-upload",
+					Title:       "Депонирование",
+					Description: "Зафиксируйте авторство вашего текста в блокчейне. Получите уникальный идентификатор для доказательства.",
+					Link:        "/deposit",
+					LinkText:    "Депонировать",
+				},
+				components.FeatureCardParams{
+					Icon:        "fas fa-search",
+					Title:       "Проверка",
+					Description: "Проверьте подлинность текста по идентификатору. Убедитесь, что текст не изменялся после фиксации.",
+					Link:        "/verify",
+					LinkText:    "Проверить",
+				},
+				components.FeatureCardParams{
+					Icon:        "fas fa-shield-alt",
+					Title:       "Безопасность",
+					Description: "Используем технологию блокчейн для гарантии неизменности. Все записи защищены криптографически.",
+					Link:        "/about",
+					LinkText:    "Подробнее",
+				},
 			},
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {

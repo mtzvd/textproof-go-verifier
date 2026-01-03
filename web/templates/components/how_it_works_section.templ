@@ -1,11 +1,62 @@
 package components
 
+type HowItWorksStep struct {
+	Number int
+	Title  string
+	Text   string
+}
+
+type HowItWorksNoteParams struct {
+	Title      string
+	Paragraphs []string
+}
+
 type HowItWorksSectionParams struct {
 	Title string
 	Steps []HowItWorksStep
 	NoteTitle string
 	NoteText  []string
 }
+
+templ HowItWorksStepItem(step HowItWorksStep) {
+	<div class="media mb-5">
+		<div class="media-left">
+			<div
+				class="has-background-info has-text-dark is-size-4 has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
+				style="width: 3rem; height: 3rem; border-radius: 50%;"
+			>
+				{ step.Number }
+			</div>
+		</div>
+
+		<div class="media-content">
+			<div class="content">
+				<p class="title is-5 mb-1">{ step.Title }</p>
+				<p class="subtitle is-6">{ step.Text }</p>
+			</div>
+		</div>
+	</div>
+}
+
+templ HowItWorksNote(props HowItWorksNoteParams) {
+	<div class="notification is-info is-light mt-6">
+		<div class="is-flex is-align-items-center mb-3">
+			<div class="mr-3 is-flex-shrink-0">
+				<span class="icon has-text-info is-large">
+					<i class="fas fa-exclamation-circle fa-2x"></i>
+				</span>
+			</div>
+			<p class="title is-5 is-marginless">{ props.Title }</p>
+		</div>
+
+		<div class="content">
+			for _, p := range props.Paragraphs {
+				<p>{ p }</p>
+			}
+		</div>
+	</div>
+}
+
 templ HowItWorksSection(props HowItWorksSectionParams) {
 	<div class="box mt-6">
 		<h3 class="title is-3 mb-5">{ props.Title }</h3>
@@ -14,6 +65,9 @@ templ HowItWorksSection(props HowItWorksSectionParams) {
 			@HowItWorksStepItem(step)
 		}
 
-		@HowItWorksNote(props.NoteTitle, props.NoteText)
+		@HowItWorksNote(HowItWorksNoteParams{
+			Title:      props.NoteTitle,
+			Paragraphs: props.NoteText,
+		})
 	</div>
 }

@@ -1,5 +1,14 @@
 package components
 
+type NavBarItem struct {
+	Label  string
+	Href   string
+	Icon   string
+	Active bool
+	Align  string
+}
+
+
 templ NavBarItemComponent(item NavBarItem) {
     <a
         class={

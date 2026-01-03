@@ -8,13 +8,7 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-type HowItWorksStep struct {
-	Number int
-	Title  string
-	Text   string
-}
-
-func HowItWorksStepItem(step HowItWorksStep) templ.Component {
+func BadgeSection(badgeURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -35,46 +29,33 @@ func HowItWorksStepItem(step HowItWorksStep) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"media mb-5\"><div class=\"media-left\"><div class=\"has-background-info has-text-dark is-size-4 has-text-weight-bold is-flex is-align-items-center is-justify-content-center\" style=\"width: 3rem; height: 3rem; border-radius: 50%;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<hr class=\"mt-6 mb-5\"><h3 class=\"title is-4 mb-4\">Бейдж для сайта</h3><div class=\"box has-background-info-light mb-5\"><p class=\"has-text-weight-bold mb-3\">Предпросмотр бейджа:</p><!-- Preview --><div class=\"has-text-centered mb-4\"><iframe src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(step.Number)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(badgeURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/how_it_works_step.templ`, Line: 16, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/bage_section.templ`, Line: 14, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div><div class=\"media-content\"><div class=\"content\"><p class=\"title is-5 mb-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" style=\"border:0; width:100%; max-width:320px; height:320px;\" loading=\"lazy\"></iframe></div><!-- HTML code --><p class=\"has-text-weight-bold mb-3\">HTML-код бейджа:</p><div class=\"field\"><div class=\"control\"><textarea class=\"textarea is-family-monospace\" rows=\"6\" readonly><iframe src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(step.Title)
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(badgeURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/how_it_works_step.templ`, Line: 22, Col: 43}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/bage_section.templ`, Line: 30, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</p><p class=\"subtitle is-6\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(step.Text)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/how_it_works_step.templ`, Line: 23, Col: 40}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" style=\"border:0; width:320px; height:320px; overflow: hidden; border: none\" scrolling=\"no\"></iframe></textarea></div></div><!-- Copy --><div class=\"field\"><div class=\"control\"><button class=\"button is-info\" onclick=\"navigator.clipboard.writeText(this.closest('.box').querySelector('textarea').value)\"><i class=\"fas fa-copy mr-2\"></i> Скопировать HTML-код бейджа</button></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

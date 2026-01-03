@@ -1,0 +1,47 @@
+package components
+
+templ BadgeSection(badgeURL string) {
+	<hr class="mt-6 mb-5">
+
+	<h3 class="title is-4 mb-4">Бейдж для сайта</h3>
+
+	<div class="box has-background-info-light mb-5">
+		<p class="has-text-weight-bold mb-3">Предпросмотр бейджа:</p>
+
+		<!-- Preview -->
+		<div class="has-text-centered mb-4">
+			<iframe
+				src={ badgeURL }
+				style="border:0; width:100%; max-width:320px; height:320px;"
+				loading="lazy">
+			</iframe>
+		</div>
+
+		<!-- HTML code -->
+		<p class="has-text-weight-bold mb-3">HTML-код бейджа:</p>
+
+		<div class="field">
+			<div class="control">
+				<textarea
+					class="textarea is-family-monospace"
+					rows="6"
+					readonly
+				>
+<iframe src={ badgeURL } style="border:0; width:320px; height:320px; overflow: hidden; border: none" scrolling="no"></iframe>
+				</textarea>
+			</div>
+		</div>
+
+		<!-- Copy -->
+		<div class="field">
+			<div class="control">
+				<button
+					class="button is-info"
+					onclick="navigator.clipboard.writeText(this.closest('.box').querySelector('textarea').value)">
+					<i class="fas fa-copy mr-2"></i>
+					Скопировать HTML-код бейджа
+				</button>
+			</div>
+		</div>
+	</div>
+}

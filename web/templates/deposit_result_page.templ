@@ -1,0 +1,41 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+
+templ DepositResultPage(
+	id string,
+	hash string,
+	timestamp string,
+	qrCodeURL string,
+	verifyURL string,
+	badgeURL string,
+	duplicate bool,
+) {
+	<section class="section">
+		<div class="container">
+			<h1 class="title is-3">
+				Результат депонирования
+			</h1>
+
+			if duplicate {
+				<div class="notification is-warning is-light">
+					Этот текст уже был зафиксирован ранее.
+					Вы видите существующую запись.
+				</div>
+			}
+
+			@components.DepositResultCard(
+				id,
+				hash,
+				timestamp,
+				qrCodeURL,
+				verifyURL,
+				duplicate,
+			)
+
+			@components.BadgeSection(
+				badgeURL,
+			)
+		</div>
+	</section>
+}

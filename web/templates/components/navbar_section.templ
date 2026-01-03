@@ -1,5 +1,11 @@
 package components
 
+type NavBar struct {
+	Brand string
+	Icon  string
+	Items []NavBarItem
+}
+
 templ NavBarSection(nav NavBar) {
 	<nav
 		class="navbar is-info"

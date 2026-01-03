@@ -17,6 +17,8 @@ type DepositResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 	QRCodeURL string    `json:"qrcode_url"`
 	BadgeURL  string    `json:"badge_url"`
+
+	Duplicate bool `json:"duplicate"`
 }
 
 // Запрос на проверку по ID
@@ -61,4 +63,19 @@ type ErrorResponse struct {
 	Error   string `json:"error"`
 	Details string `json:"details,omitempty"`
 	Code    string `json:"code,omitempty"`
+}
+
+// ViewModel результата депонирования для отображения на странице
+type DepositResultVM struct {
+	ID        string
+	Title     string
+	Author    string
+	Hash      string
+	Timestamp time.Time
+
+	QRCodeURL string
+	BadgeURL  string
+	VerifyURL string
+
+	Duplicate bool
 }

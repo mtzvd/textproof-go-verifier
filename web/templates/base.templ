@@ -25,6 +25,95 @@ templ Base(
 			<link rel="stylesheet" href="/static/css/styles.css"/>
 			<!-- Favicon -->
 			<link rel="icon" type="image/svg+xml" href="/static/favicon.svg"/>
+			<script>
+function depositResult() {
+  return {
+    visible: false,
+    duplicate: false,
+
+    id: '',
+    hash: '',
+    timestamp: '',
+    qrCodeUrl: '',
+
+    async show(data) {
+      this.id = data.id;
+      this.hash = data.hash;
+      this.timestamp = new Date(data.timestamp).toLocaleString('ru-RU');
+      this.qrCodeUrl = data.qrcode_url || '';
+      this.duplicate = !!data.duplicate;
+      this.visible = true;
+    },
+
+    get verifyUrl() {
+      return this.id ? `/verify/${this.id}` : '#';
+    },
+
+    reset() {
+      this.visible = false;
+    }
+  }
+}
+</script>
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('depositResult', () => ({
+    visible: false,
+    duplicate: false,
+
+    id: '',
+    hash: '',
+    timestamp: '',
+
+    qrCodeUrl: '',
+    badgeUrl: '',
+    badgeHtml: '',
+    loadingBadge: false,
+
+    get verifyUrl() {
+      return this.id ? `/verify/${this.id}` : '#';
+    },
+
+    async show(data) {
+      this.id = data.id;
+      this.hash = data.hash;
+      this.timestamp = new Date(data.timestamp).toLocaleString('ru-RU');
+      this.qrCodeUrl = data.qrcode_url || '';
+      this.badgeUrl = data.badge_url || '';
+      this.duplicate = !!data.duplicate;
+      this.visible = true;
+
+      if (this.badgeUrl) {
+        await this.loadBadge();
+      }
+    },
+
+    async loadBadge() {
+      this.loadingBadge = true;
+      try {
+        const res = await fetch(this.badgeUrl);
+        this.badgeHtml = await res.text();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.loadingBadge = false;
+      }
+    },
+
+    copyBadge() {
+      navigator.clipboard.writeText(this.badgeHtml);
+      alert('HTML-код бейджа скопирован');
+    },
+
+    reset() {
+      this.visible = false;
+      this.badgeHtml = '';
+    }
+  }))
+})
+</script>
+
+
 		</head>
 		<body>
 			<!-- Навигация -->

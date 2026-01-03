@@ -1,0 +1,28 @@
+package components
+
+type WarningSectionParams struct {
+	Title   string
+	Icon    string
+	Content []string
+}
+
+templ WarningSection(params WarningSectionParams) {
+	<div class="notification is-warning is-light">
+		<div class="content">
+			<div class="is-flex is-align-items-center mb-3">
+				<div class="mr-3 is-flex-shrink-0">
+					<span class="icon has-text-text is-large">
+						<i class={ params.Icon + " fa-2x" }></i>
+					</span>
+				</div>
+				<p class="title is-5 is-marginless">{ params.Title }</p>
+			</div>
+			<ul>
+				for _, item := range params.Content {
+					<li>{ item }</li>
+				}
+			</ul>
+		</div>
+	</div>
+}
+
