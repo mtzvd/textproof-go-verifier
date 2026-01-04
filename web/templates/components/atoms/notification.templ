@@ -1,0 +1,39 @@
+package atoms
+
+import "fmt"
+
+type NotificationType string
+
+const (
+	NotificationInfo    NotificationType = "is-info"
+	NotificationSuccess NotificationType = "is-success"
+	NotificationWarning NotificationType = "is-warning"
+	NotificationDanger  NotificationType = "is-danger"
+	NotificationLink    NotificationType = "is-link"
+	NotificationPrimary NotificationType = "is-primary"
+)
+
+type NotificationParams struct {
+	Content   string
+	Type      NotificationType
+	AutoClose bool
+	TimeoutMs int
+	Light     bool
+}
+
+templ Notification(props NotificationParams) {
+	<div
+		x-data={ fmt.Sprintf("{ show: true, autoClose: %t, timeout: %d, content: `%s` }", props.AutoClose, props.TimeoutMs, props.Content) }
+		x-init="if (autoClose) setTimeout(() => show = false, timeout)"
+		x-show="show"
+		x-transition
+		if props.Light {
+			class={ "notification " + string(props.Type) + " is-light" }
+		} else {
+			class={ "notification " + string(props.Type) }
+		}
+	>
+		<button class="delete" @click="show = false"></button>
+		<div x-html="content"></div>
+	</div>
+}

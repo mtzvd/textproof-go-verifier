@@ -42,13 +42,13 @@ func Base(
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/base.templ`, Line: 17, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/base.templ`, Line: 15, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - TextProof</title><!-- Bulma CSS --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css\"><!-- Font Awesome --><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css\"><!-- Alpine.js --><script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js\"></script><!-- Custom CSS --><link rel=\"stylesheet\" href=\"/static/css/styles.css\"><!-- Favicon --><link rel=\"icon\" type=\"image/svg+xml\" href=\"/static/favicon.svg\"><script>\r\nfunction depositResult() {\r\n  return {\r\n    visible: false,\r\n    duplicate: false,\r\n\r\n    id: '',\r\n    hash: '',\r\n    timestamp: '',\r\n    qrCodeUrl: '',\r\n\r\n    async show(data) {\r\n      this.id = data.id;\r\n      this.hash = data.hash;\r\n      this.timestamp = new Date(data.timestamp).toLocaleString('ru-RU');\r\n      this.qrCodeUrl = data.qrcode_url || '';\r\n      this.duplicate = !!data.duplicate;\r\n      this.visible = true;\r\n    },\r\n\r\n    get verifyUrl() {\r\n      return this.id ? `/verify/${this.id}` : '#';\r\n    },\r\n\r\n    reset() {\r\n      this.visible = false;\r\n    }\r\n  }\r\n}\r\n</script><script>\r\ndocument.addEventListener('alpine:init', () => {\r\n  Alpine.data('depositResult', () => ({\r\n    visible: false,\r\n    duplicate: false,\r\n\r\n    id: '',\r\n    hash: '',\r\n    timestamp: '',\r\n\r\n    qrCodeUrl: '',\r\n    badgeUrl: '',\r\n    badgeHtml: '',\r\n    loadingBadge: false,\r\n\r\n    get verifyUrl() {\r\n      return this.id ? `/verify/${this.id}` : '#';\r\n    },\r\n\r\n    async show(data) {\r\n      this.id = data.id;\r\n      this.hash = data.hash;\r\n      this.timestamp = new Date(data.timestamp).toLocaleString('ru-RU');\r\n      this.qrCodeUrl = data.qrcode_url || '';\r\n      this.badgeUrl = data.badge_url || '';\r\n      this.duplicate = !!data.duplicate;\r\n      this.visible = true;\r\n\r\n      if (this.badgeUrl) {\r\n        await this.loadBadge();\r\n      }\r\n    },\r\n\r\n    async loadBadge() {\r\n      this.loadingBadge = true;\r\n      try {\r\n        const res = await fetch(this.badgeUrl);\r\n        this.badgeHtml = await res.text();\r\n      } catch (e) {\r\n        console.error(e);\r\n      } finally {\r\n        this.loadingBadge = false;\r\n      }\r\n    },\r\n\r\n    copyBadge() {\r\n      navigator.clipboard.writeText(this.badgeHtml);\r\n      alert('HTML-код бейджа скопирован');\r\n    },\r\n\r\n    reset() {\r\n      this.visible = false;\r\n      this.badgeHtml = '';\r\n    }\r\n  }))\r\n})\r\n</script></head><body><!-- Навигация -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - TextProof</title><!-- Bulma CSS --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css\"><!-- Font Awesome --><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css\"><!-- Alpine.js --><script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js\"></script><!-- Custom CSS --><link rel=\"stylesheet\" href=\"/static/css/styles.css\"><!-- Favicon --><link rel=\"icon\" type=\"image/svg+xml\" href=\"/static/favicon.svg\"></head><body><!-- Навигация -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -64,7 +64,15 @@ func Base(
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></section><!-- Футер --><footer class=\"footer\"><div class=\"content has-text-centered\"><p><strong>TextProof</strong> — система доказательства авторства текстов.<br>Использует технологию блокчейн для гарантии неизменности.</p><p class=\"mt-3\"><a href=\"/about\" class=\"mr-3\">О проекте</a> <a href=\"/privacy\" class=\"mr-3\">Конфиденциальность</a> <a href=\"/terms\">Условия использования</a></p></div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></section><!-- Футер -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Footer().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

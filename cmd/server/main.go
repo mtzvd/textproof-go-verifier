@@ -48,6 +48,7 @@ func main() {
 	fmt.Println("=== Информация о блокчейне ===")
 	fmt.Printf("Длина цепочки: %d блоков\n", info["length"])
 	fmt.Printf("Цепочка валидна: %v\n", info["valid"])
+
 	if lastBlock, ok := info["last_block"]; ok {
 		fmt.Printf("Последний блок: %s\n", lastBlock)
 	}
@@ -73,6 +74,7 @@ func main() {
 			info := bc.GetChainInfo()
 			if info["length"].(int) <= 1 {
 				fmt.Println("=== Запуск тестового сценария в фоне ===")
+
 				if err := runTestScenario(bc); err != nil {
 					log.Printf("Тестовый сценарий не удался: %v", err)
 				} else {
@@ -128,7 +130,6 @@ func runTestScenario(bc *blockchain.Blockchain) error {
 	}
 
 	fmt.Println("1. Добавляем тестовый блок...")
-
 	data1 := blockchain.DepositData{
 		AuthorName:  "Иван Иванов",
 		Title:       "Мой первый пост",
@@ -143,14 +144,12 @@ func runTestScenario(bc *blockchain.Blockchain) error {
 	if err != nil {
 		return fmt.Errorf("не удалось добавить первый блок: %v", err)
 	}
-
-	fmt.Printf("   ✓ Блок добавлен за %v\n", time.Since(start))
-	fmt.Printf("   ID: %s\n", block1.ID)
-	fmt.Printf("   Хеш: %s\n", block1.Hash)
-	fmt.Printf("   Nonce: %d\n", block1.Nonce)
+	fmt.Printf("  ✓ Блок добавлен за %v\n", time.Since(start))
+	fmt.Printf("    ID: %s\n", block1.ID)
+	fmt.Printf("    Хеш: %s\n", block1.Hash)
+	fmt.Printf("    Nonce: %d\n", block1.Nonce)
 
 	fmt.Println("\n2. Добавляем второй тестовый блок...")
-
 	data2 := blockchain.DepositData{
 		AuthorName:  "Петр Петров",
 		Title:       "Статья о блокчейне",
@@ -166,10 +165,10 @@ func runTestScenario(bc *blockchain.Blockchain) error {
 		return fmt.Errorf("не удалось добавить второй блок: %v", err)
 	}
 
-	fmt.Printf("   ✓ Блок добавлен за %v\n", time.Since(start))
-	fmt.Printf("   ID: %s\n", block2.ID)
-	fmt.Printf("   Хеш: %s\n", block2.Hash)
-	fmt.Printf("   Nonce: %d\n", block2.Nonce)
+	fmt.Printf("  ✓ Блок добавлен за %v\n", time.Since(start))
+	fmt.Printf("    ID: %s\n", block2.ID)
+	fmt.Printf("    Хеш: %s\n", block2.Hash)
+	fmt.Printf("    Nonce: %d\n", block2.Nonce)
 
 	fmt.Println("\n✓ Тестовый сценарий завершен!")
 	return nil

@@ -825,20 +825,6 @@
       },
       "nonce": 25072,
       "hash": "000086f5fb2c0e92541efdb00d4c83448b72f3831d95cd9fc8f8834bbee8b4ba"
-    },
-    {
-      "id": "000-000-059",
-      "prev_hash": "000086f5fb2c0e92541efdb00d4c83448b72f3831d95cd9fc8f8834bbee8b4ba",
-      "timestamp": "2026-01-04T21:57:28.7758458+01:00",
-      "data": {
-        "author_name": "ь ",
-        "title": " тл",
-        "text_start": "лттлллтлтлтлтлтлтлтлтллттллтлтлтлтллт",
-        "text_end": "лттлллтлтлтлтлтлтлтлтллттллтлтлтлтллт",
-        "content_hash": "690f85fe158674a0c43b23a94c7b47f90aa5e4545d1515ef8de4b9dab52a065f"
-      },
-      "nonce": 65454,
-      "hash": "00000c73786a0ddb7f942ffc583e58fb078f20e6c4944affe4f03bcc08e161ca"
     }
   ],
   "difficulty": 4

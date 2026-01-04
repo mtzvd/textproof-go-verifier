@@ -7,6 +7,7 @@ import (
 	"blockchain-verifier/web/templates/components"
 )
 
+// mapStatsCards преобразует данные статистики в параметры для отображения в карточках
 func mapStatsCards(stats viewmodels.StatsResponse) []components.StatsCardParams {
 	last := "—"
 	if !stats.LastAdded.IsZero() {

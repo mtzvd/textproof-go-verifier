@@ -9,6 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+import "blockchain-verifier/internal/viewmodels"
 
 func DepositResultPage(
 	id string,
@@ -17,7 +19,9 @@ func DepositResultPage(
 	qrCodeURL string,
 	verifyURL string,
 	badgeURL string,
-	duplicate bool,
+	author string,
+	title string,
+	flashData viewmodels.FlashData, // ✅ ИЗМЕНЕНО: используем viewmodels.FlashData
 ) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -39,14 +43,45 @@ func DepositResultPage(
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"section\"><div class=\"container\"><h1 class=\"title is-3\">Результат депонирования</h1>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"columns is-centered\"><div class=\"column is-two-thirds\"><div class=\"container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if duplicate {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"notification is-warning is-light\">Этот текст уже был зафиксирован ранее. Вы видите существующую запись.</div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
+		templ_7745c5c3_Err = components.Header(components.HeaderParams{
+			Title:    "Результат депонирования",
+			Subtitle: "Информация о зафиксированном тексте",
+			Icon:     "fas fa-vault",
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- ✅ ИСПРАВЛЕНО: Показываем нотификацию только если есть flash -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if flashData.Show {
+			if flashData.IsDuplicate {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationWarning,
+					Content:   "Этот текст уже был зафиксирован ранее. Вы видите существующую запись.",
+					AutoClose: true,
+					TimeoutMs: 5000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationSuccess,
+					Content:   "Текст успешно зафиксирован!",
+					AutoClose: true,
+					TimeoutMs: 5000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 		}
 		templ_7745c5c3_Err = components.DepositResultCard(
@@ -55,7 +90,8 @@ func DepositResultPage(
 			timestamp,
 			qrCodeURL,
 			verifyURL,
-			duplicate,
+			author,
+			title,
 		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -66,7 +102,7 @@ func DepositResultPage(
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

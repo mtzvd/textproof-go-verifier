@@ -73,7 +73,7 @@ func DepositContent() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Простая форма --><div class=\"box\"><form id=\"deposit-form\" method=\"POST\" action=\"/api/deposit\"><!-- Автор --><div class=\"field\"><label class=\"label\">Автор (ФИО или псевдоним)</label><div class=\"control has-icons-left\"><input class=\"input\" type=\"text\" id=\"author\" name=\"author_name\" placeholder=\"Иванов Иван Иванович\" required> <span class=\"icon is-small is-left\"><i class=\"fas fa-user\"></i></span></div><p class=\"help\">Имя, под которым будет зафиксировано авторство</p></div><!-- Название --><div class=\"field\"><label class=\"label\">Название произведения</label><div class=\"control has-icons-left\"><input class=\"input\" type=\"text\" id=\"title\" placeholder=\"Моя статья о блокчейне\" required name=\"title\"> <span class=\"icon is-small is-left\"><i class=\"fas fa-heading\"></i></span></div><p class=\"help\">Краткое название или заголовок</p></div><!-- Текст --><div x-data=\"{ text: '' }\" class=\"field\"><label class=\"label\">Текст</label><div class=\"control\"><textarea class=\"textarea\" id=\"text\" placeholder=\"Введите ваш текст здесь...\" rows=\"10\" required name=\"text\" x-model=\"text\"></textarea></div><p class=\"help\">Длина текста в символах: <span x-text=\"text.length\"></span></p></div><!-- Публичный ключ (опционально) --><div class=\"field\"><label class=\"label\">Публичный ключ для подписи (опционально) <span class=\"tag is-light ml-2\">Необязательно</span></label><div class=\"control\"><textarea class=\"textarea\" id=\"public_key\" name=\"public_key\" placeholder=\"-----BEGIN PUBLIC KEY-----&#10;Ваш публичный ключ&#10;-----END PUBLIC KEY-----\" rows=\"4\"></textarea></div><p class=\"help\">Если хотите связать текст с вашей электронной подписью</p></div><!-- Важное примечание -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Простая форма --><div class=\"box\"><form id=\"deposit-form\" method=\"POST\" action=\"/api/deposit\"><!-- Автор --><div class=\"field\"><label class=\"label\">Автор (ФИО или псевдоним)</label><div class=\"control has-icons-left\"><input class=\"input\" type=\"text\" id=\"author\" name=\"author_name\" placeholder=\"Иванов Иван Иванович\" required> <span class=\"icon is-small is-left\"><i class=\"fas fa-user\"></i></span></div><p class=\"help\">Имя, под которым будет зафиксировано авторство</p></div><!-- Название --><div class=\"field\"><label class=\"label\">Название произведения</label><div class=\"control has-icons-left\"><input class=\"input\" type=\"text\" id=\"title\" name=\"title\" placeholder=\"Моя статья о блокчейне\" required> <span class=\"icon is-small is-left\"><i class=\"fas fa-heading\"></i></span></div><p class=\"help\">Краткое название или заголовок</p></div><!-- Текст --><div x-data=\"{ text: '' }\" class=\"field\"><label class=\"label\">Текст</label><div class=\"control\"><textarea class=\"textarea\" id=\"text\" name=\"text\" placeholder=\"Введите ваш текст здесь...\" rows=\"10\" required x-model=\"text\"></textarea></div><p class=\"help\">Длина текста в символах: <span x-text=\"text.length\"></span></p></div><!-- Публичный ключ (опционально) --><div class=\"field\"><label class=\"label\">Публичный ключ для подписи (опционально) <span class=\"tag is-light ml-2\">Необязательно</span></label><div class=\"control\"><textarea class=\"textarea\" id=\"public_key\" name=\"public_key\" placeholder=\"-----BEGIN PUBLIC KEY-----&#10;Ваш публичный ключ&#10;-----END PUBLIC KEY-----\" rows=\"4\"></textarea></div><p class=\"help\">Если хотите связать текст с вашей электронной подписью</p></div><!-- Важное примечание -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -84,11 +84,12 @@ func DepositContent() templ.Component {
 				"Система не хранит ваш текст, только его криптографический отпечаток (хеш)",
 				"Сохраните оригинал текста у себя — он нужен для будущих проверок",
 				"Процесс депонирования займет несколько секунд (майнинг блока)",
-			}}).Render(ctx, templ_7745c5c3_Buffer)
+			},
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<!-- Кнопка--><div class=\"field\"><div class=\"control\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<!-- Кнопка --><div class=\"field\"><div class=\"control\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

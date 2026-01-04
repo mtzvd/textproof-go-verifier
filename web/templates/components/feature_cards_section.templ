@@ -1,7 +1,7 @@
 package components
 
 import "blockchain-verifier/web/templates/components/atoms"
-
+// Параметры карточки возможности
 type FeatureCardParams struct {
 	Icon        string
 	Title       string
@@ -9,11 +9,7 @@ type FeatureCardParams struct {
 	Link        string
 	LinkText    string
 }
-
-type FeatureCardsSectionParams struct {
-	Cards []FeatureCardParams
-}
-
+// Карточка возможности
 templ FeatureCard(props FeatureCardParams) {
     <div class="card mb-5">
         <div class="card-content">
@@ -39,10 +35,10 @@ templ FeatureCard(props FeatureCardParams) {
         </div>
     </div>
 }
-
-templ FeatureCardsSection(props FeatureCardsSectionParams) {
+// Секция с карточками возможностей
+templ FeatureCardsSection(cards []FeatureCardParams) {
 	<div class="cards-container">
-		for _, card := range props.Cards {
+		for _, card := range cards {
 			@FeatureCard(card)
 		}
 	</div>

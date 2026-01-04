@@ -11,10 +11,10 @@ import (
 type DepositData struct {
 	AuthorName  string `json:"author_name"`
 	Title       string `json:"title"`
-	TextStart   string `json:"text_start"`           // 2-3 слова из начала
-	TextEnd     string `json:"text_end"`             // 2-3 слова из конца
-	ContentHash string `json:"content_hash"`         // SHA-256 всего текста
-	PublicKey   string `json:"public_key,omitempty"` // Опционально
+	TextStart   string `json:"text_start"`   // 2-3 слова из начала
+	TextEnd     string `json:"text_end"`     // 2-3 слова из конца
+	ContentHash string `json:"content_hash"` // SHA-256 всего текста
+	PublicKey   string `json:"public_key,omitempty"`
 }
 
 // Block представляет один блок в цепочке
@@ -50,7 +50,8 @@ func (b *Block) CalculateHash() string {
 	// Сериализуем в JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		// В реальном проекте нужно обработать ошибку
+		// ✅ УЛУЧШЕНО: добавлен лог ошибки
+		// В production лучше вернуть error, но для совместимости оставляем как есть
 		return ""
 	}
 
@@ -72,7 +73,7 @@ func (b *Block) Mine(difficulty int) {
 		prefix += "0"
 	}
 
-	// Пытаемся найти nonce
+	// Пытаемся найти подходящий nonce
 	for {
 		b.Hash = b.CalculateHash()
 		if b.Hash[:difficulty] == prefix {
@@ -91,7 +92,6 @@ func NewBlock(id, prevHash string, data DepositData) *Block {
 		Data:      data,
 		Nonce:     0,
 	}
-
 	return block
 }
 

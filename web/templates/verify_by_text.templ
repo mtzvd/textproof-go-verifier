@@ -1,0 +1,114 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+import "blockchain-verifier/internal/viewmodels"
+
+templ VerifyByText(result *viewmodels.VerificationResponse, errorMsg string, searchedText string) {
+	<div class="columns is-centered">
+		<div class="column is-two-thirds">
+			@components.Header(components.HeaderParams{
+				Title:    "Проверка по тексту",
+				Subtitle: "Введите текст для проверки",
+				Icon:     "fas fa-file-alt",
+			})
+			<!-- Форма поиска -->
+			<div class="box">
+				<form method="POST" action="/api/verify/text">
+					<div class="field" x-data="{ text: '' }">
+						<label class="label">Текст для проверки</label>
+						<div class="control">
+							<textarea
+								class="textarea"
+								name="text"
+								placeholder="Введите текст для проверки..."
+								rows="8"
+								x-model="text"
+								required
+							>{ searchedText }</textarea>
+						</div>
+						<p class="help" x-text="text ? `Длина текста: ${text.length} символов` : ''"></p>
+					</div>
+					<div class="field is-grouped">
+						<div class="control">
+							<button type="submit" class="button is-info">
+								<i class="fas fa-search mr-2"></i>
+								Проверить
+							</button>
+						</div>
+						<div class="control">
+							<a href="/verify" class="button is-light">
+								<i class="fas fa-arrow-left mr-2"></i>
+								Назад
+							</a>
+						</div>
+					</div>
+				</form>
+			</div>
+			<!-- Ошибка -->
+			if errorMsg != "" {
+				@atoms.Notification(atoms.NotificationParams{
+					Type:    atoms.NotificationDanger,
+					Content: errorMsg,
+					Light:   true,
+				})
+			}
+			<!-- Результат -->
+			if result != nil && result.Found {
+				<article class="message is-success">
+					<div class="message-header">
+						<p>
+							<i class="fas fa-check-circle mr-2"></i>
+							Текст найден!
+						</p>
+					</div>
+					<div class="message-body">
+						<div class="content">
+							<p><strong>Автор:</strong> { result.Author }</p>
+							<p><strong>Название:</strong> { result.Title }</p>
+							<p><strong>ID:</strong> <code>{ result.BlockID }</code></p>
+							<p><strong>Зафиксировано:</strong> { result.Timestamp.Format("02.01.2006 15:04:05") }</p>
+							<p><strong>Хеш текста:</strong> <code class="is-family-monospace">{ result.Hash[:16] }...</code></p>
+						</div>
+						<!-- QR-код -->
+						<div class="has-text-centered mt-4">
+							<img
+								src={ "/api/qrcode/" + result.BlockID }
+								alt="QR Code"
+								class="qrcode-img"
+							/>
+							<p class="help mt-2">QR-код для быстрой проверки</p>
+						</div>
+						<div class="notification is-success is-light mt-4">
+							<p>
+								<i class="fas fa-check-circle mr-2"></i>
+								Хеш введенного текста совпадает с хешем, зафиксированным в блокчейне. Текст не изменялся с момента фиксации.
+							</p>
+						</div>
+					</div>
+				</article>
+			} else if result != nil && !result.Found {
+				<article class="message is-warning">
+					<div class="message-header">
+						<p>Текст не найден</p>
+					</div>
+					<div class="message-body">
+						<p>Такой текст не найден в блокчейне.</p>
+						<p class="mt-2">Это означает, что:</p>
+						<ul>
+							<li>Этот текст ещё не был зафиксирован в системе</li>
+							<li>Текст был изменен после фиксации (хеш не совпадает)</li>
+							<li>Или фиксация была произведена в другой системе</li>
+						</ul>
+						<div class="mt-4">
+							<a href="/deposit" class="button is-primary">
+								<i class="fas fa-upload mr-2"></i>
+								Зафиксировать текст
+							</a>
+						</div>
+					</div>
+				</article>
+			}
+		</div>
+	</div>
+}

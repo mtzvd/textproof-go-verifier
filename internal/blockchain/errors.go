@@ -9,6 +9,7 @@ type BlockchainError struct {
 	Err     error
 }
 
+// Error возвращает строковое представление ошибки
 func (e *BlockchainError) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s: %v", e.Code, e.Message, e.Err)
@@ -16,6 +17,7 @@ func (e *BlockchainError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
+// Unwrap возвращает вложенную ошибку
 func (e *BlockchainError) Unwrap() error {
 	return e.Err
 }

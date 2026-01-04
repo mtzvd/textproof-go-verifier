@@ -8,6 +8,9 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "blockchain-verifier/web/templates/components/atoms"
+
+// Секция бейджа для сайта
 func BadgeSection(badgeURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -49,13 +52,30 @@ func BadgeSection(badgeURL string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(badgeURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/bage_section.templ`, Line: 30, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/bage_section.templ`, Line: 28, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" style=\"border:0; width:320px; height:320px; overflow: hidden; border: none\" scrolling=\"no\"></iframe></textarea></div></div><!-- Copy --><div class=\"field\"><div class=\"control\"><button class=\"button is-info\" onclick=\"navigator.clipboard.writeText(this.closest('.box').querySelector('textarea').value)\"><i class=\"fas fa-copy mr-2\"></i> Скопировать HTML-код бейджа</button></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" style=\"border:0; width:320px; height:320px; overflow: hidden; border: none\" scrolling=\"no\"></iframe></textarea></div></div><!-- Copy --><div class=\"field\" x-data=\"{\r\n\t\tshow: false,\r\n\t\tcopy() {\r\n\t\t\tnavigator.clipboard.writeText(\r\n\t\t\t\tthis.$el.closest('.box').querySelector('textarea').value\r\n\t\t\t)\r\n\t\t\tthis.show = true\r\n\t\t\tsetTimeout(() => this.show = false, 2000)\r\n\t\t}\r\n\t}\"><div class=\"control is-relative\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = atoms.Button(atoms.ButtonParams{
+			Icon:       "fas fa-copy",
+			Link:       "#",
+			LinkText:   "Скопировать HTML-код бейджа",
+			ButtonType: "is-info",
+			Attributes: templ.Attributes{
+				"type":       "button",
+				"x-on:click": "copy()",
+			},
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- Tooltip --><div x-show=\"show\" x-transition.opacity.scale.80 @click=\"show = false\" class=\"notification is-success is-light is-size-7\" style=\"\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\ttop: -2.5rem;\r\n\t\t\t\tright: 0;\r\n\t\t\t\tpadding: 0.4rem 0.75rem;\r\n\t\t\t\tcursor: pointer;\r\n\t\t\t\twhite-space: nowrap;\r\n\t\t\t\"><i class=\"fas fa-check mr-1\"></i> Код скопирован</div></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

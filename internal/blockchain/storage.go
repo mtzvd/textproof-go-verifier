@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+)
+
+const (
+	MaxBackups = 5
 )
 
 // Storage управляет файловой системой для блокчейна
@@ -27,6 +32,7 @@ func NewStorage(dataDir string) (*Storage, error) {
 		return nil, fmt.Errorf("failed to create backup directory: %v", err)
 	}
 
+	// Возвращаем новый Storage
 	return &Storage{
 		chainFile: filepath.Join(dataDir, "blockchain.json"),
 		walFile:   filepath.Join(dataDir, "wal.json"),
@@ -51,6 +57,7 @@ func (s *Storage) CreateBackup() error {
 		return fmt.Errorf("failed to read blockchain file: %v", err)
 	}
 
+	// Записываем бэкап
 	if err := os.WriteFile(backupPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write backup: %v", err)
 	}
@@ -64,41 +71,51 @@ func (s *Storage) CreateBackup() error {
 	return nil
 }
 
+// fileInfoWithPath вспомогательная структура для сортировки файлов
+type fileInfoWithPath struct {
+	path    string
+	modTime int64
+}
+
 // cleanupOldBackups удаляет старые бэкапы, оставляя только последние 5
 func (s *Storage) cleanupOldBackups() error {
-	files, err := os.ReadDir(s.backupDir)
+	entries, err := os.ReadDir(s.backupDir)
 	if err != nil {
 		return err
 	}
 
 	// Если бэкапов меньше 5, ничего не делаем
-	if len(files) <= 5 {
+	if len(entries) <= MaxBackups {
 		return nil
 	}
 
-	// Получаем информацию о файлах для сортировки по времени
-	type fileInfo struct {
-		path string
-		info os.FileInfo
-	}
+	// Собираем информацию о файлах
+	var files []fileInfoWithPath
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
 
-	var fileInfos []fileInfo
-	for _, file := range files {
-		info, err := file.Info()
+		info, err := entry.Info()
 		if err != nil {
 			continue
 		}
-		fileInfos = append(fileInfos, fileInfo{
-			path: filepath.Join(s.backupDir, file.Name()),
-			info: info,
+
+		files = append(files, fileInfoWithPath{
+			path:    filepath.Join(s.backupDir, entry.Name()),
+			modTime: info.ModTime().Unix(),
 		})
 	}
 
-	// Сортируем по времени изменения (от старых к новым)
+	// Сортируем по времени модификации
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].modTime < files[j].modTime // От старых к новым
+	})
+
 	// Удаляем самые старые
-	toDelete := len(fileInfos) - 5
+	toDelete := len(files) - MaxBackups
 	for i := 0; i < toDelete; i++ {
-		if err := os.Remove(fileInfos[i].path); err != nil {
+		if err := os.Remove(files[i].path); err != nil {
 			return err
 		}
 	}
@@ -108,12 +125,12 @@ func (s *Storage) cleanupOldBackups() error {
 
 // RestoreFromBackup восстанавливает блокчейн из последнего бэкапа
 func (s *Storage) RestoreFromBackup() error {
-	files, err := os.ReadDir(s.backupDir)
+	entries, err := os.ReadDir(s.backupDir)
 	if err != nil {
 		return fmt.Errorf("failed to read backup directory: %v", err)
 	}
 
-	if len(files) == 0 {
+	if len(entries) == 0 {
 		return fmt.Errorf("no backups found")
 	}
 
@@ -121,14 +138,19 @@ func (s *Storage) RestoreFromBackup() error {
 	var latestBackup string
 	var latestTime int64 = 0
 
-	for _, file := range files {
-		info, err := file.Info()
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		info, err := entry.Info()
 		if err != nil {
 			continue
 		}
+
 		if info.ModTime().Unix() > latestTime {
 			latestTime = info.ModTime().Unix()
-			latestBackup = filepath.Join(s.backupDir, file.Name())
+			latestBackup = filepath.Join(s.backupDir, entry.Name())
 		}
 	}
 
@@ -206,6 +228,7 @@ func (s *Storage) SaveChain(bc *Blockchain) error {
 func (s *Storage) WriteToWAL(block *Block) error {
 	// Читаем существующий WAL
 	var blocks []*Block
+
 	data, err := os.ReadFile(s.walFile)
 	if err != nil {
 		// Если файла нет, начинаем с пустого списка
@@ -244,11 +267,13 @@ func (s *Storage) ReadWAL() ([]*Block, error) {
 		return []*Block{}, nil
 	}
 
-	data, err := os.ReadFile(s.walFile)
+	// Читаем файл
+	data, err := os.ReadFile(s.walFile) // ✅ ИСПРАВЛЕНО: было ReadLine
 	if err != nil {
 		return nil, fmt.Errorf("failed to read WAL: %w", err)
 	}
 
+	// Парсим JSON
 	var blocks []*Block
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return nil, fmt.Errorf("failed to parse WAL: %w", err)

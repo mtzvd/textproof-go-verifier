@@ -17,8 +17,7 @@ type DepositResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 	QRCodeURL string    `json:"qrcode_url"`
 	BadgeURL  string    `json:"badge_url"`
-
-	Duplicate bool `json:"duplicate"`
+	Duplicate bool      `json:"duplicate"`
 }
 
 // Запрос на проверку по ID
@@ -72,10 +71,15 @@ type DepositResultVM struct {
 	Author    string
 	Hash      string
 	Timestamp time.Time
-
 	QRCodeURL string
 	BadgeURL  string
 	VerifyURL string
+}
 
-	Duplicate bool
+// FlashData структура для передачи flash-сообщений в шаблон
+type FlashData struct {
+	Show        bool
+	Type        string
+	Message     string
+	IsDuplicate bool
 }

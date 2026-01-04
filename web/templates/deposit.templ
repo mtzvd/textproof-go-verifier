@@ -44,9 +44,9 @@ templ DepositContent() {
 								class="input"
 								type="text"
 								id="title"
+								name="title"
 								placeholder="Моя статья о блокчейне"
 								required
-								name="title"
 							/>
 							<span class="icon is-small is-left">
 								<i class="fas fa-heading"></i>
@@ -61,10 +61,10 @@ templ DepositContent() {
 							<textarea
 								class="textarea"
 								id="text"
+								name="text"
 								placeholder="Введите ваш текст здесь..."
 								rows="10"
 								required
-								name="text"
 								x-model="text"
 							></textarea>
 						</div>
@@ -98,8 +98,9 @@ templ DepositContent() {
 							"Система не хранит ваш текст, только его криптографический отпечаток (хеш)",
 							"Сохраните оригинал текста у себя — он нужен для будущих проверок",
 							"Процесс депонирования займет несколько секунд (майнинг блока)",
-						}})
-					<!-- Кнопка-->
+						},
+					})
+					<!-- Кнопка -->
 					<div class="field">
 						<div class="control">
 							@atoms.Button(atoms.ButtonParams{
@@ -116,5 +117,4 @@ templ DepositContent() {
 			</div>
 		</div>
 	</div>
-	
 }

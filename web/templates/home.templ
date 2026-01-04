@@ -1,11 +1,6 @@
-package templates 
+package templates
 
 import "blockchain-verifier/web/templates/components"
-
-
-
-
-
 
 templ Home(statCards []components.StatsCardParams) {
 	@HomeContent(statCards)
@@ -14,36 +9,34 @@ templ Home(statCards []components.StatsCardParams) {
 templ HomeContent(statCards []components.StatsCardParams) {
 	<div class="columns is-centered">
 		<div class="column is-two-thirds">
-			<!-- Герой секция -->
+			<!-- Геройская секция -->
 			@components.HeroSection(components.HeroSectionParams{
 				Title:    "TextProof",
 				Subtitle: "Система доказательства авторства текстов с использованием блокчейн-технологии",
 				Icon:     "fas fa-fingerprint",
 			})
 			<!-- Карточки возможностей -->
-			@components.FeatureCardsSection(components.FeatureCardsSectionParams{
-				Cards: []components.FeatureCardParams{
-					components.FeatureCardParams{
-						Icon:        "fas fa-upload",
-						Title:       "Депонирование",
-						Description: "Зафиксируйте авторство вашего текста в блокчейне. Получите уникальный идентификатор для доказательства.",
-						Link:        "/deposit",
-						LinkText:    "Депонировать",
-					},
-					components.FeatureCardParams{
-						Icon:        "fas fa-search",
-						Title:       "Проверка",
-						Description: "Проверьте подлинность текста по идентификатору. Убедитесь, что текст не изменялся после фиксации.",
-						Link:        "/verify",
-						LinkText:    "Проверить",
-					},
-					components.FeatureCardParams{
-						Icon:        "fas fa-shield-alt",
-						Title:       "Безопасность",
-						Description: "Используем технологию блокчейн для гарантии неизменности. Все записи защищены криптографически.",
-						Link:        "/about",
-						LinkText:    "Подробнее",
-					},
+			@components.FeatureCardsSection([]components.FeatureCardParams{
+				{
+					Icon:        "fas fa-upload",
+					Title:       "Депонирование",
+					Description: "Зафиксируйте авторство вашего текста в блокчейне. Получите уникальный идентификатор для доказательства.",
+					Link:        "/deposit",
+					LinkText:    "Депонировать",
+				},
+				{
+					Icon:        "fas fa-search",
+					Title:       "Проверка",
+					Description: "Проверьте подлинность текста по идентификатору. Убедитесь, что текст не изменялся после фиксации.",
+					Link:        "/verify",
+					LinkText:    "Проверить",
+				},
+				{
+					Icon:        "fas fa-shield-alt",
+					Title:       "Безопасность",
+					Description: "Используем технологию блокчейн для гарантии неизменности. Все записи защищены криптографически.",
+					Link:        "/about",
+					LinkText:    "Подробнее",
 				},
 			})
 			<!-- Статистика -->

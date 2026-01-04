@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-
 	"net/http"
 	"strings"
 	"time"
@@ -21,6 +20,12 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
+const (
+	MaxTextLength   = 1_000_000
+	MaxAuthorLength = 200
+	MaxTitleLength  = 500
+)
+
 // API представляет собой HTTP API сервер
 type API struct {
 	blockchain *blockchain.Blockchain
@@ -33,7 +38,6 @@ func NewAPI(bc *blockchain.Blockchain) *API {
 		blockchain: bc,
 		router:     mux.NewRouter(),
 	}
-
 	api.setupRoutes()
 	return api
 }
@@ -43,15 +47,17 @@ func (api *API) setupRoutes() {
 	// Web UI routes
 	api.router.HandleFunc("/", api.handleHome).Methods("GET")
 	api.router.HandleFunc("/deposit", api.handleDepositPage).Methods("GET")
-	api.router.HandleFunc("/verify", api.handleVerifyPage).Methods("GET")
-	api.router.HandleFunc("/verify/{id}", api.handleVerifyPage).Methods("GET")
 	api.router.HandleFunc("/test", api.handleTest).Methods("GET")
 	api.router.HandleFunc("/deposit/result/{id}", api.handleDepositResult).Methods("GET")
+	api.router.HandleFunc("/verify", api.handleVerifyPage).Methods("GET")
+	api.router.HandleFunc("/verify/by-id", api.handleVerifyByIDPage).Methods("GET")
+	api.router.HandleFunc("/verify/by-text", api.handleVerifyByTextPage).Methods("GET")
+	api.router.HandleFunc("/verify/{id}", api.handleVerifyDirectLink).Methods("GET") // Прямая ссылка
 
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
-	api.router.HandleFunc("/api/verify/id/{id}", api.handleVerifyByID).Methods("GET")
-	api.router.HandleFunc("/api/verify/text", api.handleVerifyByText).Methods("POST")
+	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
+	api.router.HandleFunc("/api/verify/text", api.handleVerifyByTextSubmit).Methods("POST")
 	api.router.HandleFunc("/api/stats", api.handleStats).Methods("GET")
 	api.router.HandleFunc("/api/blockchain", api.handleBlockchainInfo).Methods("GET")
 	api.router.HandleFunc("/api/qrcode/{id}", api.handleQRCode).Methods("GET")
@@ -65,6 +71,7 @@ func (api *API) setupRoutes() {
 	api.router.NotFoundHandler = http.HandlerFunc(api.handleNotFound)
 }
 
+// handleTest возвращает простой HTML для тестирования
 func (api *API) handleTest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte("<!DOCTYPE html><html><body><h1>Test HTML</h1></body></html>"))
@@ -84,11 +91,10 @@ func (api *API) renderHTML(w http.ResponseWriter, r *http.Request, component tem
 	}
 }
 
-// Тогда обработчики будут выглядеть так:
+// handleHome обрабатывает главную страницу
 func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
-	// собираем статистику
+	// Собираем статистику
 	allBlocks := api.blockchain.GetAllBlocks()
-
 	authors := make(map[string]bool)
 	var lastAdded time.Time
 
@@ -108,7 +114,6 @@ func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	navVM := viewmodels.BuildHomeNavBar(r)
 	nav := mapNavBar(navVM)
-
 	statCards := mapStatsCards(stats)
 
 	api.renderHTML(
@@ -122,6 +127,7 @@ func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// handleDepositPage обрабатывает страницу депонирования
 func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
 	navVM := viewmodels.BuildHomeNavBar(r)
 	nav := mapNavBar(navVM)
@@ -137,19 +143,32 @@ func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
-	navVM := viewmodels.BuildHomeNavBar(r)
-	nav := mapNavBar(navVM)
+// handleVerifyPage обрабатывает страницу проверки
 
-	api.renderHTML(
-		w,
-		r,
-		templates.Base(
-			"Проверка текста",
-			nav,
-			templates.VerifyContent(),
-		),
-	)
+// Функция валидации депозита
+func (api *API) validateDepositRequest(req viewmodels.DepositRequest) error {
+	if strings.TrimSpace(req.AuthorName) == "" {
+		return fmt.Errorf("имя автора не может быть пустым")
+	}
+	if len(req.AuthorName) > MaxAuthorLength {
+		return fmt.Errorf("имя автора слишком длинное (макс %d символов)", MaxAuthorLength)
+	}
+
+	if strings.TrimSpace(req.Title) == "" {
+		return fmt.Errorf("название не может быть пустым")
+	}
+	if len(req.Title) > MaxTitleLength {
+		return fmt.Errorf("название слишком длинное (макс %d символов)", MaxTitleLength)
+	}
+
+	if strings.TrimSpace(req.Text) == "" {
+		return fmt.Errorf("текст не может быть пустым")
+	}
+	if len(req.Text) > MaxTextLength {
+		return fmt.Errorf("текст слишком длинный (макс %d символов)", MaxTextLength)
+	}
+
+	return nil
 }
 
 // handleDeposit обрабатывает запрос на депонирование текста
@@ -167,14 +186,16 @@ func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Валидация
-	if req.AuthorName == "" || req.Title == "" || req.Text == "" {
-		api.sendError(w, http.StatusBadRequest, "Все обязательные поля должны быть заполнены", nil)
+	if err := api.validateDepositRequest(req); err != nil {
+		api.sendError(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	// Вычисляем хеш текста
 	hash := sha256.Sum256([]byte(req.Text))
 	contentHash := hex.EncodeToString(hash[:])
+
+	_, existedBefore := api.blockchain.HasContentHash(contentHash)
 
 	// Извлекаем фрагменты текста (первые и последние 2-3 слова)
 	textStart := extractTextFragment(req.Text, 3, true)
@@ -197,13 +218,17 @@ func (api *API) handleDeposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Перенаправляем на страницу результата депонирования
-	http.Redirect(
-		w,
-		r,
-		fmt.Sprintf("/deposit/result/%s", block.ID),
-		http.StatusSeeOther,
-	)
+	//Устанавливаем flash message вместо query параметров
+	flashData := make(map[string]string)
+	if existedBefore {
+		flashData["duplicate"] = "true"
+		setFlash(w, "warning", "duplicate", flashData)
+	} else {
+		setFlash(w, "success", "new_deposit", flashData)
+	}
+
+	redirectURL := fmt.Sprintf("/deposit/result/%s", block.ID)
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
 
 // handleVerifyByID обрабатывает проверку по ID
@@ -224,7 +249,7 @@ func (api *API) handleVerifyByID(w http.ResponseWriter, r *http.Request) {
 		Title:     block.Data.Title,
 		Timestamp: block.Timestamp,
 		Hash:      block.Data.ContentHash,
-		Matches:   true, // Если блок найден, то хеш уже совпадает (мы не проверяем текст, только что блок существует)
+		Matches:   true, // Если блок найден, то хеш уже совпадает
 	}
 
 	api.sendJSON(w, http.StatusOK, resp)
@@ -240,6 +265,13 @@ func (api *API) handleVerifyByText(w http.ResponseWriter, r *http.Request) {
 
 	if strings.TrimSpace(req.Text) == "" {
 		api.sendError(w, http.StatusBadRequest, "Текст не может быть пустым", nil)
+		return
+	}
+
+	// Валидация размера текста
+	if len(req.Text) > MaxTextLength {
+		api.sendError(w, http.StatusBadRequest,
+			fmt.Sprintf("Текст слишком длинный (макс %d символов)", MaxTextLength), nil)
 		return
 	}
 
@@ -346,8 +378,8 @@ func (api *API) handleBadge(w http.ResponseWriter, r *http.Request) {
 
 	// Формируем данные
 	baseURL := getBaseURL(r)
-	qrCodeUrl := fmt.Sprintf("%s/api/qrcode/%s", baseURL, id)
-	verifyUrl := fmt.Sprintf("%s/verify/%s", baseURL, id)
+	qrCodeURL := fmt.Sprintf("%s/api/qrcode/%s", baseURL, id)
+	verifyURL := fmt.Sprintf("%s/verify/%s", baseURL, id)
 
 	// ВАЖНО: правильный Content-Type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -357,9 +389,9 @@ func (api *API) handleBadge(w http.ResponseWriter, r *http.Request) {
 		block.Data.Title,
 		block.Data.AuthorName,
 		block.ID,
-		qrCodeUrl,
+		qrCodeURL,
 		block.Timestamp.Format("02.01.2006 15:04"),
-		verifyUrl,
+		verifyURL,
 	).Render(r.Context(), w)
 
 	if err != nil {
@@ -434,10 +466,11 @@ func mapNavBar(vm viewmodels.NavBar) components.NavBar {
 
 	for _, it := range vm.Items {
 		items = append(items, components.NavBarItem{
-			Label: it.Label,
-			Href:  it.Href,
-			Icon:  it.Icon,
-			Align: it.Align,
+			Label:  it.Label,
+			Href:   it.Href,
+			Icon:   it.Icon,
+			Active: it.Active,
+			Align:  it.Align,
 		})
 	}
 
@@ -458,24 +491,11 @@ func (api *API) handleDepositResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// wasDuplicate можно вычислить по логике:
-	// если ID не последний → дубликат
-	all := api.blockchain.GetAllBlocks()
-	duplicate := all[len(all)-1].ID != block.ID
-
-	vm := viewmodels.DepositResultVM{
-		ID:        block.ID,
-		Title:     block.Data.Title,
-		Author:    block.Data.AuthorName,
-		Hash:      block.Data.ContentHash,
-		Timestamp: block.Timestamp,
-		QRCodeURL: fmt.Sprintf("%s/api/qrcode/%s", getBaseURL(r), block.ID),
-		BadgeURL:  fmt.Sprintf("%s/api/badge/%s", getBaseURL(r), block.ID),
-		VerifyURL: fmt.Sprintf("%s/verify/%s", getBaseURL(r), block.ID),
-		Duplicate: duplicate,
-	}
+	// Читаем flash message (будет FlashData{Show: false} при прямом переходе)
+	flashData := getFlashData(r, w)
 
 	nav := mapNavBar(viewmodels.BuildHomeNavBar(r))
+	formattedTime := block.Timestamp.Format("02.01.2006 15:04:05")
 
 	api.renderHTML(
 		w,
@@ -483,7 +503,241 @@ func (api *API) handleDepositResult(w http.ResponseWriter, r *http.Request) {
 		templates.Base(
 			"Результат депонирования",
 			nav,
-			templates.DepositResultPage(vm.ID, vm.Hash, vm.Timestamp.Format("2025-12-12 15:03:12"), vm.QRCodeURL, vm.VerifyURL, vm.BadgeURL, vm.Duplicate),
+			templates.DepositResultPage(
+				block.ID,
+				block.Data.ContentHash,
+				formattedTime,
+				fmt.Sprintf("%s/api/qrcode/%s", getBaseURL(r), block.ID),
+				fmt.Sprintf("%s/verify/%s", getBaseURL(r), block.ID),
+				fmt.Sprintf("%s/api/badge/%s", getBaseURL(r), block.ID),
+				block.Data.AuthorName,
+				block.Data.Title,
+				flashData,
+			),
+		),
+	)
+}
+
+// handleVerifyPage - главная страница выбора метода
+func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Проверка текста",
+			nav,
+			templates.VerifyContent(),
+		),
+	)
+}
+
+// handleVerifyByIDPage - страница проверки по ID
+func (api *API) handleVerifyByIDPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Проверка по ID",
+			nav,
+			templates.VerifyByID(nil, "", ""),
+		),
+	)
+}
+
+// handleVerifyByTextPage - страница проверки по тексту
+func (api *API) handleVerifyByTextPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Проверка по тексту",
+			nav,
+			templates.VerifyByText(nil, "", ""),
+		),
+	)
+}
+
+// handleVerifyDirectLink - прямая ссылка /verify/{id}
+func (api *API) handleVerifyDirectLink(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	// Получаем блок
+	block, err := api.blockchain.GetBlockByID(id)
+
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	var result *viewmodels.VerificationResponse
+	var errorMsg string
+
+	if err != nil {
+		// Блок не найден
+		result = &viewmodels.VerificationResponse{
+			Found: false,
+		}
+	} else {
+		// Блок найден
+		result = &viewmodels.VerificationResponse{
+			Found:     true,
+			BlockID:   block.ID,
+			Author:    block.Data.AuthorName,
+			Title:     block.Data.Title,
+			Timestamp: block.Timestamp,
+			Hash:      block.Data.ContentHash,
+			Matches:   true,
+		}
+	}
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Проверка по ID",
+			nav,
+			templates.VerifyByID(result, errorMsg, id),
+		),
+	)
+}
+
+// handleVerifyByIDSubmit - обработка формы проверки по ID
+func (api *API) handleVerifyByIDSubmit(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		api.sendError(w, http.StatusBadRequest, "Неверные данные формы", err)
+		return
+	}
+
+	id := strings.TrimSpace(r.FormValue("id"))
+	if id == "" {
+		api.sendError(w, http.StatusBadRequest, "ID не может быть пустым", nil)
+		return
+	}
+
+	// Получаем блок
+	block, err := api.blockchain.GetBlockByID(id)
+
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	var result *viewmodels.VerificationResponse
+	var errorMsg string
+
+	if err != nil {
+		// Блок не найден
+		result = &viewmodels.VerificationResponse{
+			Found: false,
+		}
+	} else {
+		// Блок найден
+		result = &viewmodels.VerificationResponse{
+			Found:     true,
+			BlockID:   block.ID,
+			Author:    block.Data.AuthorName,
+			Title:     block.Data.Title,
+			Timestamp: block.Timestamp,
+			Hash:      block.Data.ContentHash,
+			Matches:   true,
+		}
+	}
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Результат проверки",
+			nav,
+			templates.VerifyByID(result, errorMsg, id),
+		),
+	)
+}
+
+// handleVerifyByTextSubmit - обработка формы проверки по тексту
+func (api *API) handleVerifyByTextSubmit(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		api.sendError(w, http.StatusBadRequest, "Неверные данные формы", err)
+		return
+	}
+
+	text := r.FormValue("text")
+	if strings.TrimSpace(text) == "" {
+		navVM := viewmodels.BuildHomeNavBar(r)
+		nav := mapNavBar(navVM)
+
+		api.renderHTML(
+			w,
+			r,
+			templates.Base(
+				"Проверка по тексту",
+				nav,
+				templates.VerifyByText(nil, "Текст не может быть пустым", text),
+			),
+		)
+		return
+	}
+
+	// Валидация размера
+	if len(text) > MaxTextLength {
+		navVM := viewmodels.BuildHomeNavBar(r)
+		nav := mapNavBar(navVM)
+
+		api.renderHTML(
+			w,
+			r,
+			templates.Base(
+				"Проверка по тексту",
+				nav,
+				templates.VerifyByText(nil, fmt.Sprintf("Текст слишком длинный (макс %d символов)", MaxTextLength), text),
+			),
+		)
+		return
+	}
+
+	// Вычисляем хеш текста
+	hash := sha256.Sum256([]byte(text))
+	contentHash := hex.EncodeToString(hash[:])
+
+	// O(1) поиск через индекс
+	block, exists := api.blockchain.HasContentHash(contentHash)
+
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	var result *viewmodels.VerificationResponse
+
+	if !exists {
+		// Текст не найден
+		result = &viewmodels.VerificationResponse{
+			Found: false,
+		}
+	} else {
+		// Текст найден
+		result = &viewmodels.VerificationResponse{
+			Found:     true,
+			BlockID:   block.ID,
+			Author:    block.Data.AuthorName,
+			Title:     block.Data.Title,
+			Timestamp: block.Timestamp,
+			Hash:      block.Data.ContentHash,
+			Matches:   true,
+		}
+	}
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Результат проверки",
+			nav,
+			templates.VerifyByText(result, "", ""), // Не показываем текст в результате
 		),
 	)
 }

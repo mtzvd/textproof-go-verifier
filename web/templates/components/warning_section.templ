@@ -1,6 +1,6 @@
 package components
 
-type WarningSectionParams struct {
+type WarningSectionParams struct { 
 	Title   string
 	Icon    string
 	Content []string
@@ -11,7 +11,7 @@ templ WarningSection(params WarningSectionParams) {
 		<div class="content">
 			<div class="is-flex is-align-items-center mb-3">
 				<div class="mr-3 is-flex-shrink-0">
-					<span class="icon has-text-text is-large">
+					<span class="icon has-text-warning is-large"> 
 						<i class={ params.Icon + " fa-2x" }></i>
 					</span>
 				</div>
@@ -25,4 +25,3 @@ templ WarningSection(params WarningSectionParams) {
 		</div>
 	</div>
 }
-

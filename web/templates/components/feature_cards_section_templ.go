@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "blockchain-verifier/web/templates/components/atoms"
 
+// Параметры карточки возможности
 type FeatureCardParams struct {
 	Icon        string
 	Title       string
@@ -18,10 +19,7 @@ type FeatureCardParams struct {
 	LinkText    string
 }
 
-type FeatureCardsSectionParams struct {
-	Cards []FeatureCardParams
-}
-
+// Карточка возможности
 func FeatureCard(props FeatureCardParams) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -72,7 +70,7 @@ func FeatureCard(props FeatureCardParams) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/feature_cards_section.templ`, Line: 26, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/feature_cards_section.templ`, Line: 22, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -85,7 +83,7 @@ func FeatureCard(props FeatureCardParams) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(props.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/feature_cards_section.templ`, Line: 29, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/components/feature_cards_section.templ`, Line: 25, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -112,7 +110,8 @@ func FeatureCard(props FeatureCardParams) templ.Component {
 	})
 }
 
-func FeatureCardsSection(props FeatureCardsSectionParams) templ.Component {
+// Секция с карточками возможностей
+func FeatureCardsSection(cards []FeatureCardParams) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -137,7 +136,7 @@ func FeatureCardsSection(props FeatureCardsSectionParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, card := range props.Cards {
+		for _, card := range cards {
 			templ_7745c5c3_Err = FeatureCard(card).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

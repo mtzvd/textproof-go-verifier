@@ -35,7 +35,7 @@ func WarningSection(params WarningSectionParams) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"notification is-warning is-light\"><div class=\"content\"><div class=\"is-flex is-align-items-center mb-3\"><div class=\"mr-3 is-flex-shrink-0\"><span class=\"icon has-text-text is-large\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"notification is-warning is-light\"><div class=\"content\"><div class=\"is-flex is-align-items-center mb-3\"><div class=\"mr-3 is-flex-shrink-0\"><span class=\"icon has-text-warning is-large\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

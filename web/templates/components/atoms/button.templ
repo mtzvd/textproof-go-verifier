@@ -1,18 +1,31 @@
 package atoms
 
+// Параметры кнопки
 type ButtonParams struct {
-	Icon     string
-	Link     string
-	LinkText string
-    ButtonType string
-    Attributes templ.Attributes
-
+	Icon       string
+	Link       string
+	LinkText   string
+	ButtonType string
+	Attributes templ.Attributes
 }
 
+// Кнопка (рендерит <a> для ссылок, <button> для действий)
 templ Button(props ButtonParams) {
-	<button href={ props.Link } class={ "button "+props.ButtonType } { props.Attributes... }>
-
-		<i class={ props.Icon + " mr-2"}></i>
-		{ props.LinkText }
-	</button>
+	if props.Link != "" && props.Link != "#" {
+		
+		<a href={ templ.URL(props.Link) } class={ "button " + props.ButtonType } { props.Attributes... }>
+			if props.Icon != "" {
+				<i class={ props.Icon + " mr-2" }></i>
+			}
+			{ props.LinkText }
+		</a>
+	} else {
+		<!-- Обычная кнопка для действий (submit, onclick и т.д.) -->
+		<button class={ "button " + props.ButtonType } { props.Attributes... }>
+			if props.Icon != "" {
+				<i class={ props.Icon + " mr-2" }></i>
+			}
+			{ props.LinkText }
+		</button>
+	}
 }

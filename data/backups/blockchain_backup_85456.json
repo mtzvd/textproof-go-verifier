@@ -783,62 +783,6 @@
       },
       "nonce": 71378,
       "hash": "00000208f3b6006cee5f9c4d82667614551c446e11df1cbf8e0c7356906b4bae"
-    },
-    {
-      "id": "000-000-056",
-      "prev_hash": "00000208f3b6006cee5f9c4d82667614551c446e11df1cbf8e0c7356906b4bae",
-      "timestamp": "2026-01-04T21:48:23.9335092+01:00",
-      "data": {
-        "author_name": "лттллт",
-        "title": "лттлтл",
-        "text_start": "123",
-        "text_end": "123",
-        "content_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
-      },
-      "nonce": 6550,
-      "hash": "000021d93e8112a9831d51e20f4f0cb4bc138350924aeb6e6a583d425ad4d249"
-    },
-    {
-      "id": "000-000-057",
-      "prev_hash": "000021d93e8112a9831d51e20f4f0cb4bc138350924aeb6e6a583d425ad4d249",
-      "timestamp": "2026-01-04T21:49:41.809074+01:00",
-      "data": {
-        "author_name": "мамакма",
-        "title": "мамамам",
-        "text_start": "1234",
-        "text_end": "1234",
-        "content_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
-      },
-      "nonce": 11555,
-      "hash": "000057c1a65e694b9444b5ef80485b4652207036889b405027dc03e48ceea6e7"
-    },
-    {
-      "id": "000-000-058",
-      "prev_hash": "000057c1a65e694b9444b5ef80485b4652207036889b405027dc03e48ceea6e7",
-      "timestamp": "2026-01-04T21:50:34.7418972+01:00",
-      "data": {
-        "author_name": "уеума",
-        "title": "вмвмва",
-        "text_start": "12345",
-        "text_end": "12345",
-        "content_hash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
-      },
-      "nonce": 25072,
-      "hash": "000086f5fb2c0e92541efdb00d4c83448b72f3831d95cd9fc8f8834bbee8b4ba"
-    },
-    {
-      "id": "000-000-059",
-      "prev_hash": "000086f5fb2c0e92541efdb00d4c83448b72f3831d95cd9fc8f8834bbee8b4ba",
-      "timestamp": "2026-01-04T21:57:28.7758458+01:00",
-      "data": {
-        "author_name": "ь ",
-        "title": " тл",
-        "text_start": "лттлллтлтлтлтлтлтлтлтллттллтлтлтлтллт",
-        "text_end": "лттлллтлтлтлтлтлтлтлтллттллтлтлтлтллт",
-        "content_hash": "690f85fe158674a0c43b23a94c7b47f90aa5e4545d1515ef8de4b9dab52a065f"
-      },
-      "nonce": 65454,
-      "hash": "00000c73786a0ddb7f942ffc583e58fb078f20e6c4944affe4f03bcc08e161ca"
     }
   ],
   "difficulty": 4

@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 type HowItWorksStep struct {
 	Number int
 	Title  string
@@ -12,9 +14,9 @@ type HowItWorksNoteParams struct {
 }
 
 type HowItWorksSectionParams struct {
-	Title string
-	Steps []HowItWorksStep
-	NoteTitle string
+	Title     string
+	Steps     []HowItWorksStep
+	NoteTitle string // ✅ ИСПРАВЛЕНО: было Notetitle
 	NoteText  []string
 }
 
@@ -22,13 +24,12 @@ templ HowItWorksStepItem(step HowItWorksStep) {
 	<div class="media mb-5">
 		<div class="media-left">
 			<div
-				class="has-background-info has-text-dark is-size-4 has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
+				class="has-background-info has-text-white is-size-4 has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
 				style="width: 3rem; height: 3rem; border-radius: 50%;"
 			>
-				{ step.Number }
+				{ fmt.Sprintf("%d", step.Number) }
 			</div>
 		</div>
-
 		<div class="media-content">
 			<div class="content">
 				<p class="title is-5 mb-1">{ step.Title }</p>
@@ -48,7 +49,6 @@ templ HowItWorksNote(props HowItWorksNoteParams) {
 			</div>
 			<p class="title is-5 is-marginless">{ props.Title }</p>
 		</div>
-
 		<div class="content">
 			for _, p := range props.Paragraphs {
 				<p>{ p }</p>
@@ -60,11 +60,9 @@ templ HowItWorksNote(props HowItWorksNoteParams) {
 templ HowItWorksSection(props HowItWorksSectionParams) {
 	<div class="box mt-6">
 		<h3 class="title is-3 mb-5">{ props.Title }</h3>
-
 		for _, step := range props.Steps {
 			@HowItWorksStepItem(step)
 		}
-
 		@HowItWorksNote(HowItWorksNoteParams{
 			Title:      props.NoteTitle,
 			Paragraphs: props.NoteText,

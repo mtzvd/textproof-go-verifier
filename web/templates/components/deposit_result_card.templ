@@ -1,53 +1,37 @@
 package components
 
-func resultClass(duplicate bool) string {
-	if duplicate {
-		return "message is-warning"
-	}
-	return "message is-success"
-}
-
-func iconClass(duplicate bool) string {
-	if duplicate {
-		return "fas fa-info-circle mr-2"
-	}
-	return "fas fa-check-circle mr-2"
-}
-
-func resultTitle(duplicate bool) string {
-	if duplicate {
-		return "Этот текст уже был зафиксирован ранее"
-	}
-	return "Текст успешно зафиксирован!"
-}
-
+// Карточка с результатом депонирования
 templ DepositResultCard(
 	id string,
 	hash string,
 	timestamp string,
-	qrCodeUrl string,
-	verifyUrl string,
-	isDuplicate bool,
+	qrCodeURL string,
+	verifyURL string,
+	author string,
+	title string,
 ) {
-	<article class={resultClass(isDuplicate)}>
+	<article class="message is-info">
 		<div class="message-header">
 			<p>
-				<i class={iconClass(isDuplicate)}></i>
-				<span>
-					{resultTitle(isDuplicate)}
-				</span>
+				<i class="fas fa-info-circle mr-2"></i>
+				<span>Информация о депонировании</span>
 			</p>
 		</div>
-
 		<div class="message-body">
-			<p><strong>ID:</strong> {id}</p>
-			<p><strong>Хеш:</strong> {hash}</p>
-			<p><strong>Время:</strong> {timestamp}</p>
-
+			<div class="content">
+				<p><strong>ID:</strong> <code>{ id }</code></p>
+				<p><strong>Хеш:</strong> <code class="is-family-monospace">{ hash }</code></p>
+				<p><strong>Время:</strong> { timestamp }</p>
+				<p><strong>Автор:</strong> { author }</p>
+				<p><strong>Название:</strong> { title }</p>
+			</div>
 			<div class="mt-4 has-text-centered">
-				<img src={qrCodeUrl} alt="QR Code" style="background: white; padding: 8px;"/>
+				<img src={ qrCodeURL } alt="QR Code" style="background: white; padding: 8px;"/>
 				<p class="mt-2">
-					<a href={verifyUrl}>Проверить документ</a>
+					<a href={ verifyURL } class="button is-info is-light">
+						<i class="fas fa-search mr-2"></i>
+						Проверить документ
+					</a>
 				</p>
 			</div>
 		</div>
