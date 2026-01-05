@@ -839,6 +839,20 @@
       },
       "nonce": 65454,
       "hash": "00000c73786a0ddb7f942ffc583e58fb078f20e6c4944affe4f03bcc08e161ca"
+    },
+    {
+      "id": "000-000-060",
+      "prev_hash": "00000c73786a0ddb7f942ffc583e58fb078f20e6c4944affe4f03bcc08e161ca",
+      "timestamp": "2026-01-05T20:22:10.9148305+01:00",
+      "data": {
+        "author_name": "d vdg b",
+        "title": "gbdfbdd",
+        "text_start": "dcbdccbd",
+        "text_end": "dcbdccbd",
+        "content_hash": "d996f7976b5cd514df622dc6489dc22707448703967d5ef8354b7943dd3d4c4b"
+      },
+      "nonce": 47599,
+      "hash": "0000e461ce651cfe9420f822e74491f8765a8b41f97c776f23e9c18d0f0124c2"
     }
   ],
   "difficulty": 4
