@@ -566,13 +566,13 @@ Options:
 
 ### Examples
 
-# Run on port 9090 with data in ./my_data
+#### Run on port 9090 with data in ./my_data
 
 ```bash
 go run cmd/server/main.go -data-dir ./my_data -port 9090
 ```
 
-# Run with reduced difficulty for testing
+#### Run with reduced difficulty for testing
 
 ```bash
 go run cmd/server/main.go -difficulty 3 -debug
@@ -583,13 +583,13 @@ go run cmd/server/main.go -difficulty 3 -debug
 
 ### Hot Reload with modd
 
-# Install modd
+#### Install modd
 
 ```bash
 go install github.com/cortesi/modd/cmd/modd@latest
 ```
 
-# Run with auto-reload
+#### Run with auto-reload
 
 ```bash
 modd
@@ -650,19 +650,19 @@ When `.templ` files change, `templ generate` will run automatically and the serv
 
 ## Testing
 
-# Run all tests
+#### Run all tests
 
 ```bash
 go test ./...
 ```
 
-# Tests with coverage
+#### Tests with coverage
 
 ```bash
 go test -cover ./...
 ```
 
-# Generate coverage report
+#### Generate coverage report
 
 ```bash
 go test -coverprofile=coverage.out ./...
