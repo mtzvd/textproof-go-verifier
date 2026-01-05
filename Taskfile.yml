@@ -1,0 +1,207 @@
+version: '3'
+
+vars:
+  APP_NAME: textproof
+  BUILD_DIR: build
+  DATA_DIR: data
+  PORT: 8080
+  DIFFICULTY: 4
+  
+  # Цвета для вывода
+  CYAN: "\033[0;36m"
+  GREEN: "\033[0;32m"
+  RED: "\033[0;31m"
+  NC: "\033[0m"
+
+tasks:
+  default:
+    desc: Показать справку
+    cmds:
+      - task --list-all
+
+  all:
+    desc: Полная сборка проекта
+    cmds:
+      - task: clean
+      - task: templ
+      - task: build
+
+  install-deps:
+    desc: Установить зависимости
+    cmds:
+      - echo "{{.CYAN}}Установка зависимостей...{{.NC}}"
+      - go mod download
+      - go mod verify
+
+  install-templ:
+    desc: Установить Templ
+    cmds:
+      - echo "{{.CYAN}}Установка Templ...{{.NC}}"
+      - go install github.com/a-h/templ/cmd/templ@latest
+
+  templ:
+    desc: Генерация темплейтов
+    cmds:
+      - |
+        echo "{{.CYAN}}Генерация темплейтов...{{.NC}}"
+        if ! command -v templ &> /dev/null; then
+          echo "{{.RED}}Templ не установлен. Запустите: task install-templ{{.NC}}"
+          exit 1
+        fi
+        templ generate
+
+  build:
+    desc: Собрать проект
+    deps: [templ]
+    cmds:
+      - |
+        echo "{{.CYAN}}Сборка проекта...{{.NC}}"
+        mkdir -p {{.BUILD_DIR}}
+        go build -o {{.BUILD_DIR}}/{{.APP_NAME}} ./cmd/server/main.go
+        echo "{{.GREEN}}✓ Сборка завершена: {{.BUILD_DIR}}/{{.APP_NAME}}{{.NC}}"
+
+  run:
+    desc: Запустить сервер
+    deps: [build]
+    cmds:
+      - |
+        echo "{{.CYAN}}Запуск сервера на порту {{.PORT}}...{{.NC}}"
+        ./{{.BUILD_DIR}}/{{.APP_NAME}} -port {{.PORT}} -difficulty {{.DIFFICULTY}}
+
+  dev:
+    desc: Запуск в режиме разработки (с авто-пересборкой темплейтов)
+    cmds:
+      - |
+        echo "{{.CYAN}}Режим разработки...{{.NC}}"
+        echo "{{.CYAN}}Запуск templ в watch режиме...{{.NC}}"
+        (templ generate --watch &)
+        sleep 2
+        echo "{{.CYAN}}Запуск air для hot-reload...{{.NC}}"
+        if command -v air &> /dev/null; then
+          air
+        else
+          echo "{{.RED}}Air не установлен. Установите: go install github.com/cosmtrek/air@latest{{.NC}}"
+          echo "{{.CYAN}}Запуск без hot-reload...{{.NC}}"
+          task: run
+        fi
+
+  test:
+    desc: Запустить тесты
+    cmds:
+      - echo "{{.CYAN}}Запуск тестов...{{.NC}}"
+      - go test -v ./...
+
+  test-cover:
+    desc: Тесты с покрытием
+    cmds:
+      - |
+        echo "{{.CYAN}}Запуск тестов с покрытием...{{.NC}}"
+        go test -coverprofile=coverage.out ./...
+        go tool cover -html=coverage.out -o coverage.html
+        echo "{{.GREEN}}✓ Отчёт о покрытии: coverage.html{{.NC}}"
+
+  clean:
+    desc: Очистить собранные файлы
+    cmds:
+      - |
+        echo "{{.CYAN}}Очистка...{{.NC}}"
+        rm -rf {{.BUILD_DIR}}
+        rm -f coverage.out coverage.html
+        find . -name "*_templ.go" -type f -delete
+        echo "{{.GREEN}}✓ Очистка завершена{{.NC}}"
+
+  clean-data:
+    desc: Удалить данные блокчейна (ОСТОРОЖНО!)
+    cmds:
+      - |
+        echo "{{.RED}}ВНИМАНИЕ: Это удалит все данные блокчейна!{{.NC}}"
+        read -p "Вы уверены? [y/N] " -n 1 -r
+        echo
+        if [[ $$REPLY =~ ^[Yy]$$ ]]; then
+          rm -rf {{.DATA_DIR}}
+          echo "{{.GREEN}}✓ Данные удалены{{.NC}}"
+        else
+          echo "{{.CYAN}}Отменено{{.NC}}"
+        fi
+
+  fmt:
+    desc: Форматировать код
+    cmds:
+      - |
+        echo "{{.CYAN}}Форматирование кода...{{.NC}}"
+        go fmt ./...
+        if command -v templ &> /dev/null; then
+          templ fmt .
+        fi
+        echo "{{.GREEN}}✓ Форматирование завершено{{.NC}}"
+
+  lint:
+    desc: Проверить код линтером
+    cmds:
+      - |
+        echo "{{.CYAN}}Проверка кода...{{.NC}}"
+        if command -v golangci-lint &> /dev/null; then
+          golangci-lint run
+        else
+          echo "{{.RED}}golangci-lint не установлен{{.NC}}"
+          echo "Установите: https://golangci-lint.run/usage/install/"
+        fi
+
+  install-tools:
+    desc: Установить все инструменты разработки
+    cmds:
+      - task: install-templ
+      - |
+        echo "{{.CYAN}}Установка инструментов разработки...{{.NC}}"
+        go install github.com/cosmtrek/air@latest
+        echo "{{.GREEN}}✓ Инструменты установлены{{.NC}}"
+
+  docker-build:
+    desc: Собрать Docker образ
+    cmds:
+      - |
+        echo "{{.CYAN}}Сборка Docker образа...{{.NC}}"
+        docker build -t {{.APP_NAME}}:latest .
+        echo "{{.GREEN}}✓ Docker образ собран{{.NC}}"
+
+  docker-run:
+    desc: Запустить в Docker
+    cmds:
+      - |
+        echo "{{.CYAN}}Запуск в Docker...{{.NC}}"
+        docker run -p {{.PORT}}:{{.PORT}} -v {{.PWD}}/{{.DATA_DIR}}:/app/{{.DATA_DIR}} {{.APP_NAME}}:latest
+
+  backup:
+    desc: Создать бэкап данных
+    cmds:
+      - |
+        echo "{{.CYAN}}Создание бэкапа...{{.NC}}"
+        mkdir -p backups
+        tar -czf backups/backup-$$(date +%Y%m%d-%H%M%S).tar.gz {{.DATA_DIR}}
+        echo "{{.GREEN}}✓ Бэкап создан в backups/{{.NC}}"
+
+  stats:
+    desc: Показать статистику проекта
+    cmds:
+      - |
+        echo "{{.CYAN}}Статистика проекта:{{.NC}}"
+        echo "  Всего строк Go кода:"
+        find . -name "*.go" -not -path "./vendor/*" | xargs wc -l | tail -1
+        echo "  Всего файлов Templ:"
+        find . -name "*.templ" | wc -l
+        echo "  Размер данных:"
+        if [ -d "{{.DATA_DIR}}" ]; then
+          du -sh {{.DATA_DIR}}
+        else
+          echo "  Нет данных"
+        fi
+
+  logs:
+    desc: Показать последние логи
+    cmds:
+      - |
+        if [ -f "{{.APP_NAME}}.log" ]; then
+          tail -f {{.APP_NAME}}.log
+        else
+          echo "{{.RED}}Файл логов не найден{{.NC}}"
+        fi
