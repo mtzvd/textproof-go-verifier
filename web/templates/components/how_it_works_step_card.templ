@@ -1,0 +1,53 @@
+package components
+
+import "fmt"
+
+// Параметры карточки шага
+type HowItWorksStepCardParams struct {
+	Number      int    // Номер шага (1, 2, 3)
+	Title       string // Заголовок шага
+	Description string // Описание
+}
+
+// Одна карточка шага
+templ HowItWorksStepCard(props HowItWorksStepCardParams) {
+	<div class="column">
+		<div class="card has-background-info-light" style="height: 100%;">
+			<div class="card-content">
+				<div class="media mb-3">
+					<div class="media-left">
+						<div
+							class="has-background-info has-text-white is-size-6 has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
+							style="width: 1.5rem; height: 1.5rem; border-radius: 50%;"
+						>
+							{ fmt.Sprintf("%d", props.Number) }
+						</div>
+					</div>
+					<div class="media-content is-flex is-align-items-center">
+						<p class="title is-6 mb-0">{ props.Title }</p>
+					</div>
+				</div>
+				<div class="content">
+					<p>{ props.Description }</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+// Секция со всеми шагами
+templ HowItWorksStepsSection(title string, steps []HowItWorksStepCardParams) {
+	<div class="box">
+		<h2 class="title is-4">
+			<i class="fas fa-cogs has-text-info mr-2"></i>
+			{ title }
+		</h2>
+		<div class="content">
+			<div class="columns is-variable is-4">
+				for _, step := range steps {
+					@HowItWorksStepCard(step)
+				}
+			</div>
+		</div>
+	</div>
+}

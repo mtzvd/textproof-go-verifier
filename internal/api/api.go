@@ -54,6 +54,7 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/verify/result/{id}", api.handleVerifyResultPage).Methods("GET")
 	api.router.HandleFunc("/about", api.handleAboutPage).Methods("GET")
 	api.router.HandleFunc("/privacy", api.handlePrivacyPage).Methods("GET")
+	api.router.HandleFunc("/terms", api.handleTermsPage).Methods("GET")
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
 	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
@@ -758,6 +759,22 @@ func (api *API) handlePrivacyPage(w http.ResponseWriter, r *http.Request) {
 			"Политика конфиденциальности",
 			nav,
 			templates.PrivacyContent(),
+		),
+	)
+}
+
+// handleTermsPage обрабатывает страницу "Условия использования"
+func (api *API) handleTermsPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Условия использования",
+			nav,
+			templates.TermsContent(),
 		),
 	)
 }

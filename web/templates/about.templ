@@ -1,6 +1,8 @@
 package templates
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+import "blockchain-verifier/internal/config"
 
 templ About() {
 	@AboutContent()
@@ -31,55 +33,24 @@ templ AboutContent() {
 				</div>
 			</div>
 			<!-- Как это работает -->
-			<div class="box">
-				<h2 class="title is-4">
-					<i class="fas fa-cogs has-text-info mr-2"></i>
-					Как это работает?
-				</h2>
-				<div class="content">
-					<div class="columns">
-						<div class="column">
-							<div class="notification is-info is-light">
-								<h3 class="subtitle is-5">
-									<span class="icon-text">
-										<span class="icon"><i class="fas fa-1"></i></span>
-										<span>Хеширование</span>
-									</span>
-								</h3>
-								<p>
-									Система вычисляет уникальный криптографический хеш (SHA-256) вашего текста. Это односторонняя функция — по хешу невозможно восстановить текст.
-								</p>
-							</div>
-						</div>
-						<div class="column">
-							<div class="notification is-success is-light">
-								<h3 class="subtitle is-5">
-									<span class="icon-text">
-										<span class="icon"><i class="fas fa-2"></i></span>
-										<span>Блокчейн</span>
-									</span>
-								</h3>
-								<p>
-									Хеш записывается в блокчейн с временной меткой. Каждый блок связан с предыдущим криптографически, что делает изменение прошлых записей невозможным.
-								</p>
-							</div>
-						</div>
-						<div class="column">
-							<div class="notification is-warning is-light">
-								<h3 class="subtitle is-5">
-									<span class="icon-text">
-										<span class="icon"><i class="fas fa-3"></i></span>
-										<span>Proof-of-Work</span>
-									</span>
-								</h3>
-								<p>
-									Для создания блока требуется вычислительная работа (майнинг). Это защищает блокчейн от спама и подделок.
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			@components.HowItWorksStepsSection("Как это работает?", []components.HowItWorksStepCardParams{
+				{
+					Number:      1,
+					Title:       "Хеширование",
+					Description: "Система вычисляет уникальный криптографический хеш (SHA-256) вашего текста. Это односторонняя функция — по хешу невозможно восстановить текст.",
+				},
+				{
+					Number:      2,
+					Title:       "Блокчейн",
+					Description: "Хеш записывается в блокчейн с временной меткой. Каждый блок связан с предыдущим криптографически, что делает изменение прошлых записей невозможным.",
+				},
+				{
+					Number:      3,
+					Title:       "Proof-of-Work",
+					Description: "Для создания блока требуется вычислительная работа (майнинг). Это защищает блокчейн от спама и подделок.",
+				},
+			})
+			
 			<!-- Технические детали -->
 			<div class="box">
 				<h2 class="title is-4">
@@ -87,34 +58,42 @@ templ AboutContent() {
 					Технические детали
 				</h2>
 				<div class="content">
-					<table class="table is-fullwidth is-striped">
-						<tbody>
-							<tr>
-								<td><strong>Хеш-функция</strong></td>
-								<td>SHA-256 (256-бит)</td>
-							</tr>
-							<tr>
-								<td><strong>Алгоритм консенсуса</strong></td>
-								<td>Proof-of-Work</td>
-							</tr>
-							<tr>
-								<td><strong>Сложность майнинга</strong></td>
-								<td>4 ведущих нуля (конфигурируемо)</td>
-							</tr>
-							<tr>
-								<td><strong>Формат ID блоков</strong></td>
-								<td>000-000-001 ... 999-999-999, затем A-000-000-000</td>
-							</tr>
-							<tr>
-								<td><strong>Хранение данных</strong></td>
-								<td>JSON + WAL + автоматические бэкапы</td>
-							</tr>
-							<tr>
-								<td><strong>Время создания блока</strong></td>
-								<td>~2-5 секунд (зависит от сложности)</td>
-							</tr>
-						</tbody>
-					</table>
+					<div class="table-container">
+						<table class="table is-fullwidth is-striped is-hoverable">
+							<thead>
+								<tr>
+									<th>Параметр</th>
+									<th>Значение</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><strong>Хеш-функция</strong></td>
+									<td>SHA-256 (256-бит)</td>
+								</tr>
+								<tr>
+									<td><strong>Алгоритм консенсуса</strong></td>
+									<td>Proof-of-Work</td>
+								</tr>
+								<tr>
+									<td><strong>Сложность майнинга</strong></td>
+									<td>4 ведущих нуля (конфигурируемо)</td>
+								</tr>
+								<tr>
+									<td><strong>Формат ID блоков</strong></td>
+									<td>000-000-001 ... 999-999-999, затем A-000-000-000</td>
+								</tr>
+								<tr>
+									<td><strong>Хранение данных</strong></td>
+									<td>JSON + WAL + автоматические бэкапы</td>
+								</tr>
+								<tr>
+									<td><strong>Время создания блока</strong></td>
+									<td>~2-5 секунд (зависит от сложности)</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 			<!-- Что сохраняется -->
@@ -147,94 +126,44 @@ templ AboutContent() {
 				</div>
 			</div>
 			<!-- Применение -->
-			<div class="box">
-				<h2 class="title is-4">
-					<i class="fas fa-lightbulb has-text-info mr-2"></i>
-					Сценарии использования
-				</h2>
-				<div class="content">
-					<div class="columns is-multiline">
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-book has-text-primary mr-2"></i>
-										Литературные произведения
-									</p>
-									<p class="is-size-7">
-										Зафиксируйте авторство рассказа, поэмы, романа или статьи до публикации.
-									</p>
-								</div>
-							</div>
-						</div>
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-flask has-text-info mr-2"></i>
-										Научные работы
-									</p>
-									<p class="is-size-7">
-										Подтвердите приоритет научного открытия или изобретения.
-									</p>
-								</div>
-							</div>
-						</div>
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-code has-text-success mr-2"></i>
-										Код и алгоритмы
-									</p>
-									<p class="is-size-7">
-										Защитите авторство программного кода или алгоритма.
-									</p>
-								</div>
-							</div>
-						</div>
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-briefcase has-text-warning mr-2"></i>
-										Деловые документы
-									</p>
-									<p class="is-size-7">
-										Зафиксируйте время создания контракта, предложения или спецификации.
-									</p>
-								</div>
-							</div>
-						</div>
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-newspaper has-text-danger mr-2"></i>
-										Журналистика
-									</p>
-									<p class="is-size-7">
-										Докажите, что материал существовал до публикации конкурентов.
-									</p>
-								</div>
-							</div>
-						</div>
-						<div class="column is-half">
-							<div class="card">
-								<div class="card-content">
-									<p class="title is-6">
-										<i class="fas fa-gavel has-text-link mr-2"></i>
-										Юридические документы
-									</p>
-									<p class="is-size-7">
-										Временная метка для свидетельских показаний или заявлений.
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			@components.UseCasesSection("Сценарии использования", []components.UseCaseCardParams{
+				{
+					Icon:        "fas fa-book",
+					IconColor:   "has-text-info",
+					Title:       "Литературные произведения",
+					Description: "Зафиксируйте авторство рассказа, поэмы, романа или статьи до публикации.",
+				},
+				{
+					Icon:        "fas fa-flask",
+					IconColor:   "has-text-info",
+					Title:       "Научные работы",
+					Description: "Подтвердите приоритет научного открытия или изобретения.",
+				},
+				{
+					Icon:        "fas fa-code",
+					IconColor:   "has-text-info",
+					Title:       "Код и алгоритмы",
+					Description: "Защитите авторство программного кода или алгоритма.",
+				},
+				{
+					Icon:        "fas fa-briefcase",
+					IconColor:   "has-text-info",
+					Title:       "Деловые документы",
+					Description: "Зафиксируйте время создания контракта, предложения или спецификации.",
+				},
+				{
+					Icon:        "fas fa-newspaper",
+					IconColor:   "has-text-info",
+					Title:       "Журналистика",
+					Description: "Докажите, что материал существовал до публикации конкурентов.",
+				},
+				{
+					Icon:        "fas fa-gavel",
+					IconColor:   "has-text-info",
+					Title:       "Юридические документы",
+					Description: "Временная метка для свидетельских показаний или заявлений.",
+				},
+			})
 			<!-- Ограничения -->
 			<div class="box">
 				<h2 class="title is-4">
@@ -269,20 +198,28 @@ templ AboutContent() {
 						TextProof — это проект с открытым исходным кодом. Вы можете:
 					</p>
 					<ul>
-						<li>Изучить код на <a href="https://github.com/yourusername/textproof" target="_blank">GitHub</a></li>
-						<li>Развернуть собственную инстанцию</li>
+						<li>Изучить код на <a href="https://github.com/mtzvd/textproof-go-verifier" target="_blank">GitHub</a></li>
+						<li>Развернуть собственную  копию</li>
 						<li>Внести вклад в развитие проекта</li>
 						<li>Проверить безопасность реализации</li>
 					</ul>
 					<div class="buttons mt-4">
-						<a href="https://github.com/yourusername/textproof" class="button is-dark" target="_blank">
-							<span class="icon"><i class="fab fa-github"></i></span>
-							<span>Исходный код</span>
-						</a>
-						<a href="https://github.com/yourusername/textproof/issues" class="button is-link is-light" target="_blank">
-							<span class="icon"><i class="fas fa-bug"></i></span>
-							<span>Сообщить об ошибке</span>
-						</a>
+						@atoms.Button(
+							atoms.ButtonParams{
+								Icon:       "fab fa-github",
+								Link:       config.GitHubRepoURL(),
+								LinkText:   "Исходный код",
+								ButtonType: "is-dark",
+							},
+						)
+						@atoms.Button(
+							atoms.ButtonParams{
+								Icon:       "fas fa-book",
+								Link:       config.GitHubIssues(),
+								LinkText:   "Сообщить об ошибке",
+								ButtonType: "is-link is-light",
+							},
+						)
 					</div>
 				</div>
 			</div>
@@ -294,14 +231,22 @@ templ AboutContent() {
 						Зафиксируйте авторство вашего текста прямо сейчас
 					</p>
 					<div class="buttons is-centered">
-						<a href="/deposit" class="button is-primary is-medium">
-							<span class="icon"><i class="fas fa-upload"></i></span>
-							<span>Депонировать текст</span>
-						</a>
-						<a href="/verify" class="button is-info is-medium is-light">
-							<span class="icon"><i class="fas fa-search"></i></span>
-							<span>Проверить текст</span>
-						</a>
+						@atoms.Button(
+							atoms.ButtonParams{
+								Icon:       "fas fa-upload",
+								Link:       "/deposit",
+								LinkText:   "Депонировать текст",
+								ButtonType: "is-info is-medium",
+							},
+						)
+						@atoms.Button(
+							atoms.ButtonParams{
+								Icon:       "fas fa-search",
+								Link:       "/verify",
+								LinkText:   "Проверить текст",
+								ButtonType: "is-info is-medium is-light",
+							},
+						)
 					</div>
 				</div>
 			</div>
