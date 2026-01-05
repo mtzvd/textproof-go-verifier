@@ -887,13 +887,19 @@ textproof/
 ├── modd.conf                    # Konfiguracja hot reload
 ├── .gitignore
 └── README.md
+<<<<<<< HEAD
 ```
+=======
+>>>>>>> f0191df1ab4d80c8dad6e757e5a96b263f1c86e4
 
 ### Blockchain
 
 **Struktura bloku:**
 
+<<<<<<< HEAD
 ```bash
+=======
+>>>>>>> f0191df1ab4d80c8dad6e757e5a96b263f1c86e4
 type Block struct {
     ID        string       // "000-000-001"
     PrevHash  string       // Skrót poprzedniego bloku
