@@ -50,10 +50,8 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/test", api.handleTest).Methods("GET")
 	api.router.HandleFunc("/deposit/result/{id}", api.handleDepositResult).Methods("GET")
 	api.router.HandleFunc("/verify", api.handleVerifyPage).Methods("GET")
-	api.router.HandleFunc("/verify/by-id", api.handleVerifyByIDPage).Methods("GET")
-	api.router.HandleFunc("/verify/by-text", api.handleVerifyByTextPage).Methods("GET")
-	api.router.HandleFunc("/verify/{id}", api.handleVerifyDirectLink).Methods("GET") // Прямая ссылка
-
+	api.router.HandleFunc("/verify/{id}", api.handleVerifyDirectLink).Methods("GET")
+	api.router.HandleFunc("/verify/result/{id}", api.handleVerifyResultPage).Methods("GET")
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
 	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
@@ -142,8 +140,6 @@ func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
 		),
 	)
 }
-
-// handleVerifyPage обрабатывает страницу проверки
 
 // Функция валидации депозита
 func (api *API) validateDepositRequest(req viewmodels.DepositRequest) error {
@@ -518,10 +514,11 @@ func (api *API) handleDepositResult(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// handleVerifyPage - главная страница выбора метода
+// handleVerifyPage - главная страница проверки с табами
 func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 	navVM := viewmodels.BuildHomeNavBar(r)
 	nav := mapNavBar(navVM)
+	flashData := getFlashData(r, w)
 
 	api.renderHTML(
 		w,
@@ -529,7 +526,7 @@ func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 		templates.Base(
 			"Проверка текста",
 			nav,
-			templates.VerifyContent(),
+			templates.VerifyContent(flashData),
 		),
 	)
 }
@@ -566,88 +563,48 @@ func (api *API) handleVerifyByTextPage(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// handleVerifyDirectLink - прямая ссылка /verify/{id}
+// handleVerifyDirectLink - прямая ссылка /verify/{id} (автоматическая проверка)
 func (api *API) handleVerifyDirectLink(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	// Получаем блок
 	block, err := api.blockchain.GetBlockByID(id)
 
 	navVM := viewmodels.BuildHomeNavBar(r)
 	nav := mapNavBar(navVM)
-
-	var result *viewmodels.VerificationResponse
-	var errorMsg string
+	flashData := getFlashData(r, w)
 
 	if err != nil {
-		// Блок не найден
-		result = &viewmodels.VerificationResponse{
-			Found: false,
-		}
-	} else {
-		// Блок найден
-		result = &viewmodels.VerificationResponse{
-			Found:     true,
-			BlockID:   block.ID,
-			Author:    block.Data.AuthorName,
-			Title:     block.Data.Title,
-			Timestamp: block.Timestamp,
-			Hash:      block.Data.ContentHash,
-			Matches:   true,
-		}
-	}
+		// Блок не найден - показываем ошибку на странице verify
+		setFlash(w, "danger", "not_found", map[string]string{
+			"id": id,
+		})
 
-	api.renderHTML(
-		w,
-		r,
-		templates.Base(
-			"Проверка по ID",
-			nav,
-			templates.VerifyByID(result, errorMsg, id),
-		),
-	)
-}
-
-// handleVerifyByIDSubmit - обработка формы проверки по ID
-func (api *API) handleVerifyByIDSubmit(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		api.sendError(w, http.StatusBadRequest, "Неверные данные формы", err)
+		api.renderHTML(
+			w,
+			r,
+			templates.Base(
+				"Проверка текста",
+				nav,
+				templates.VerifyContent(flashData),
+			),
+		)
 		return
 	}
 
-	id := strings.TrimSpace(r.FormValue("id"))
-	if id == "" {
-		api.sendError(w, http.StatusBadRequest, "ID не может быть пустым", nil)
-		return
+	// Блок найден - показываем результат
+	result := viewmodels.VerificationResponse{
+		Found:     true,
+		BlockID:   block.ID,
+		Author:    block.Data.AuthorName,
+		Title:     block.Data.Title,
+		Timestamp: block.Timestamp,
+		Hash:      block.Data.ContentHash,
+		Matches:   true,
 	}
 
-	// Получаем блок
-	block, err := api.blockchain.GetBlockByID(id)
-
-	navVM := viewmodels.BuildHomeNavBar(r)
-	nav := mapNavBar(navVM)
-
-	var result *viewmodels.VerificationResponse
-	var errorMsg string
-
-	if err != nil {
-		// Блок не найден
-		result = &viewmodels.VerificationResponse{
-			Found: false,
-		}
-	} else {
-		// Блок найден
-		result = &viewmodels.VerificationResponse{
-			Found:     true,
-			BlockID:   block.ID,
-			Author:    block.Data.AuthorName,
-			Title:     block.Data.Title,
-			Timestamp: block.Timestamp,
-			Hash:      block.Data.ContentHash,
-			Matches:   true,
-		}
-	}
+	// Устанавливаем flash для успешной проверки
+	setFlash(w, "success", "verified", nil)
 
 	api.renderHTML(
 		w,
@@ -655,49 +612,62 @@ func (api *API) handleVerifyByIDSubmit(w http.ResponseWriter, r *http.Request) {
 		templates.Base(
 			"Результат проверки",
 			nav,
-			templates.VerifyByID(result, errorMsg, id),
+			templates.VerifyResult(result, getFlashData(r, w)),
 		),
 	)
+}
+
+// handleVerifyByIDSubmit - обработка формы проверки по ID
+func (api *API) handleVerifyByIDSubmit(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
+		return
+	}
+
+	id := strings.TrimSpace(r.FormValue("id"))
+	if id == "" {
+		setFlash(w, "danger", "empty_id", nil)
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
+		return
+	}
+
+	// Пытаемся найти блок
+	block, err := api.blockchain.GetBlockByID(id)
+
+	if err != nil {
+		// Блок не найден - возвращаем на форму с ошибкой
+		setFlash(w, "warning", "not_found", map[string]string{
+			"id": id,
+		})
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
+		return
+	}
+
+	// Блок найден - редирект на страницу результата
+	setFlash(w, "success", "verified", nil)
+	http.Redirect(w, r, fmt.Sprintf("/verify/result/%s", block.ID), http.StatusSeeOther)
 }
 
 // handleVerifyByTextSubmit - обработка формы проверки по тексту
 func (api *API) handleVerifyByTextSubmit(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		api.sendError(w, http.StatusBadRequest, "Неверные данные формы", err)
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
 		return
 	}
 
 	text := r.FormValue("text")
 	if strings.TrimSpace(text) == "" {
-		navVM := viewmodels.BuildHomeNavBar(r)
-		nav := mapNavBar(navVM)
-
-		api.renderHTML(
-			w,
-			r,
-			templates.Base(
-				"Проверка по тексту",
-				nav,
-				templates.VerifyByText(nil, "Текст не может быть пустым", text),
-			),
-		)
+		setFlash(w, "danger", "empty_text", nil)
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
 		return
 	}
 
 	// Валидация размера
 	if len(text) > MaxTextLength {
-		navVM := viewmodels.BuildHomeNavBar(r)
-		nav := mapNavBar(navVM)
-
-		api.renderHTML(
-			w,
-			r,
-			templates.Base(
-				"Проверка по тексту",
-				nav,
-				templates.VerifyByText(nil, fmt.Sprintf("Текст слишком длинный (макс %d символов)", MaxTextLength), text),
-			),
-		)
+		setFlash(w, "danger", "text_too_long", map[string]string{
+			"max": fmt.Sprintf("%d", MaxTextLength),
+		})
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
 		return
 	}
 
@@ -708,28 +678,44 @@ func (api *API) handleVerifyByTextSubmit(w http.ResponseWriter, r *http.Request)
 	// O(1) поиск через индекс
 	block, exists := api.blockchain.HasContentHash(contentHash)
 
-	navVM := viewmodels.BuildHomeNavBar(r)
-	nav := mapNavBar(navVM)
-
-	var result *viewmodels.VerificationResponse
-
 	if !exists {
 		// Текст не найден
-		result = &viewmodels.VerificationResponse{
-			Found: false,
-		}
-	} else {
-		// Текст найден
-		result = &viewmodels.VerificationResponse{
-			Found:     true,
-			BlockID:   block.ID,
-			Author:    block.Data.AuthorName,
-			Title:     block.Data.Title,
-			Timestamp: block.Timestamp,
-			Hash:      block.Data.ContentHash,
-			Matches:   true,
-		}
+		setFlash(w, "warning", "text_not_found", nil)
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
+		return
 	}
+
+	// Текст найден - редирект на страницу результата
+	setFlash(w, "success", "verified", nil)
+	http.Redirect(w, r, fmt.Sprintf("/verify/result/%s", block.ID), http.StatusSeeOther)
+}
+
+// handleVerifyResultPage - страница результата проверки
+func (api *API) handleVerifyResultPage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	block, err := api.blockchain.GetBlockByID(id)
+	if err != nil {
+		// Если блок не найден - редирект на verify с ошибкой
+		setFlash(w, "danger", "not_found", map[string]string{"id": id})
+		http.Redirect(w, r, "/verify", http.StatusSeeOther)
+		return
+	}
+
+	result := viewmodels.VerificationResponse{
+		Found:     true,
+		BlockID:   block.ID,
+		Author:    block.Data.AuthorName,
+		Title:     block.Data.Title,
+		Timestamp: block.Timestamp,
+		Hash:      block.Data.ContentHash,
+		Matches:   true,
+	}
+
+	flashData := getFlashData(r, w)
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
 
 	api.renderHTML(
 		w,
@@ -737,7 +723,7 @@ func (api *API) handleVerifyByTextSubmit(w http.ResponseWriter, r *http.Request)
 		templates.Base(
 			"Результат проверки",
 			nav,
-			templates.VerifyByText(result, "", ""), // Не показываем текст в результате
+			templates.VerifyResult(result, flashData),
 		),
 	)
 }

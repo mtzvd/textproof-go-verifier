@@ -9,8 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+import "blockchain-verifier/internal/viewmodels"
 
-func Verify() templ.Component {
+func Verify(flashData viewmodels.FlashData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +33,7 @@ func Verify() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = VerifyContent().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = VerifyContent(flashData).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +41,7 @@ func Verify() templ.Component {
 	})
 }
 
-func VerifyContent() templ.Component {
+func VerifyContent(flashData viewmodels.FlashData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -72,7 +74,69 @@ func VerifyContent() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Выбор метода проверки --><div class=\"box\"><h2 class=\"title is-4 mb-4\">Выберите способ проверки:</h2><div class=\"columns\"><div class=\"column\"><div class=\"card\"><div class=\"card-content has-text-centered\"><div class=\"mb-4\"><span class=\"icon is-large has-text-info\"><i class=\"fas fa-id-card fa-3x\"></i></span></div><p class=\"title is-5\">По идентификатору</p><p class=\"subtitle is-6 mb-4\">Если у вас есть ID блока</p><a href=\"/verify/by-id\" class=\"button is-info is-fullwidth\"><i class=\"fas fa-arrow-right mr-2\"></i> Проверить по ID</a></div></div></div><div class=\"column\"><div class=\"card\"><div class=\"card-content has-text-centered\"><div class=\"mb-4\"><span class=\"icon is-large has-text-info\"><i class=\"fas fa-file-alt fa-3x\"></i></span></div><p class=\"title is-5\">По тексту</p><p class=\"subtitle is-6 mb-4\">Проверьте сам текст документа</p><a href=\"/verify/by-text\" class=\"button is-info is-fullwidth\"><i class=\"fas fa-arrow-right mr-2\"></i> Проверить по тексту</a></div></div></div></div></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<!-- Flash сообщения об ошибках -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if flashData.Show {
+			if flashData.Message == "not_found" {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationWarning,
+					Content:   "Текст с указанным идентификатором не найден в блокчейне.",
+					AutoClose: true,
+					TimeoutMs: 5000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else if flashData.Message == "text_not_found" {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationWarning,
+					Content:   "Текст с таким содержимым не найден в блокчейне.",
+					AutoClose: true,
+					TimeoutMs: 5000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else if flashData.Message == "empty_id" {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationDanger,
+					Content:   "ID не может быть пустым.",
+					AutoClose: true,
+					TimeoutMs: 3000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else if flashData.Message == "empty_text" {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationDanger,
+					Content:   "Текст не может быть пустым.",
+					AutoClose: true,
+					TimeoutMs: 3000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else if flashData.Message == "text_too_long" {
+				templ_7745c5c3_Err = atoms.Notification(atoms.NotificationParams{
+					Type:      atoms.NotificationDanger,
+					Content:   "Текст слишком длинный. Максимальная длина: 1 000 000 символов.",
+					AutoClose: true,
+					TimeoutMs: 5000,
+					Light:     true,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<!-- Табы с Alpine.js --><div x-data=\"{ activeTab: 'by-id' }\" class=\"box\"><!-- Переключатель табов --><div class=\"tabs is-centered is-boxed mb-5\"><ul><li :class=\"{ 'is-active': activeTab === 'by-id' }\"><a @click=\"activeTab = 'by-id'\"><span class=\"icon is-small\"><i class=\"fas fa-id-card\"></i></span> <span>По идентификатору</span></a></li><li :class=\"{ 'is-active': activeTab === 'by-text' }\"><a @click=\"activeTab = 'by-text'\"><span class=\"icon is-small\"><i class=\"fas fa-file-alt\"></i></span> <span>По тексту</span></a></li></ul></div><!-- Таб: Проверка по ID --><div x-show=\"activeTab === 'by-id'\" x-transition><form method=\"POST\" action=\"/api/verify/id\"><div class=\"field\"><label class=\"label\">Идентификатор блока</label><div class=\"control has-icons-left\"><input class=\"input is-medium\" type=\"text\" name=\"id\" placeholder=\"000-000-001\" pattern=\"[A-Za-z0-9-]+\" required autofocus> <span class=\"icon is-small is-left\"><i class=\"fas fa-hashtag\"></i></span></div><p class=\"help\">Введите ID в формате: 000-000-001 или A-000-000-001</p></div><div class=\"field\"><div class=\"control\"><button type=\"submit\" class=\"button is-info is-medium\"><span class=\"icon\"><i class=\"fas fa-search\"></i></span> <span>Проверить по ID</span></button></div></div></form></div><!-- Таб: Проверка по тексту --><div x-show=\"activeTab === 'by-text'\" x-transition><form method=\"POST\" action=\"/api/verify/text\"><div class=\"field\" x-data=\"{ text: '' }\"><label class=\"label\">Текст для проверки</label><div class=\"control\"><textarea class=\"textarea is-medium\" name=\"text\" placeholder=\"Введите текст для проверки...\" rows=\"10\" x-model=\"text\" required></textarea></div><p class=\"help\" x-text=\"text ? `Длина текста: ${text.length} символов` : 'Введите текст документа для проверки'\"></p></div><div class=\"field\"><div class=\"control\"><button type=\"submit\" class=\"button is-info is-medium\"><span class=\"icon\"><i class=\"fas fa-search\"></i></span> <span>Проверить по тексту</span></button></div></div></form></div></div><!-- Подсказка --><div class=\"notification is-info is-light\"><p class=\"has-text-weight-semibold mb-2\"><i class=\"fas fa-lightbulb mr-2\"></i> Совет:</p><p>Если у вас есть ID блока, используйте проверку по идентификатору — это быстрее. Если ID нет, но есть оригинальный текст, система вычислит его хеш и проверит наличие в блокчейне.</p></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
