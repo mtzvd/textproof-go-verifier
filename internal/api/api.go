@@ -52,6 +52,8 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/verify", api.handleVerifyPage).Methods("GET")
 	api.router.HandleFunc("/verify/{id}", api.handleVerifyDirectLink).Methods("GET")
 	api.router.HandleFunc("/verify/result/{id}", api.handleVerifyResultPage).Methods("GET")
+	api.router.HandleFunc("/about", api.handleAboutPage).Methods("GET")
+	api.router.HandleFunc("/privacy", api.handlePrivacyPage).Methods("GET")
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
 	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
@@ -724,6 +726,38 @@ func (api *API) handleVerifyResultPage(w http.ResponseWriter, r *http.Request) {
 			"Результат проверки",
 			nav,
 			templates.VerifyResult(result, flashData),
+		),
+	)
+}
+
+// handleAboutPage обрабатывает страницу "О проекте"
+func (api *API) handleAboutPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"О проекте",
+			nav,
+			templates.AboutContent(),
+		),
+	)
+}
+
+// handlePrivacyPage обрабатывает страницу "Конфиденциальность"
+func (api *API) handlePrivacyPage(w http.ResponseWriter, r *http.Request) {
+	navVM := viewmodels.BuildHomeNavBar(r)
+	nav := mapNavBar(navVM)
+
+	api.renderHTML(
+		w,
+		r,
+		templates.Base(
+			"Политика конфиденциальности",
+			nav,
+			templates.PrivacyContent(),
 		),
 	)
 }

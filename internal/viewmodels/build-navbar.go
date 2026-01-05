@@ -3,6 +3,8 @@ package viewmodels
 import "net/http"
 
 func BuildHomeNavBar(r *http.Request) NavBar {
+	currentPath := r.URL.Path
+
 	return NavBar{
 		Brand: "TextProof",
 		Icon:  "fas fa-fingerprint",
@@ -11,28 +13,30 @@ func BuildHomeNavBar(r *http.Request) NavBar {
 				Label:  "Главная",
 				Href:   "/",
 				Icon:   "fas fa-home",
-				Active: r.URL.Path == "/",
+				Active: currentPath == "/",
 				Align:  "start",
 			},
 			{
 				Label:  "Депонировать",
 				Href:   "/deposit",
 				Icon:   "fas fa-upload",
-				Active: r.URL.Path == "/deposit",
+				Active: currentPath == "/deposit",
 				Align:  "start",
 			},
 			{
-				Label:  "Проверить",
-				Href:   "/verify",
-				Icon:   "fas fa-search",
-				Active: r.URL.Path == "/verify",
-				Align:  "start",
+				Label: "Проверить",
+				Href:  "/verify",
+				Icon:  "fas fa-search",
+				Active: currentPath == "/verify" ||
+					len(currentPath) > 7 && currentPath[:7] == "/verify",
+				Align: "start",
 			},
 			{
-				Label: "API Docs",
-				Href:  "/api/docs",
-				Icon:  "fas fa-book",
-				Align: "end",
+				Label:  "О проекте",
+				Href:   "/about",
+				Icon:   "fas fa-info-circle",
+				Active: currentPath == "/about",
+				Align:  "end",
 			},
 		},
 	}

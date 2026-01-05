@@ -1,0 +1,336 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+import "time"
+
+templ Privacy() {
+	@PrivacyContent()
+}
+
+templ PrivacyContent() {
+	<div class="columns is-centered">
+		<div class="column is-three-quarters">
+			<!-- Заголовок -->
+			@components.Header(components.HeaderParams{
+				Title:    "Политика конфиденциальности",
+				Subtitle: "Как мы обрабатываем и защищаем ваши данные",
+				Icon:     "fas fa-shield-alt",
+			})
+			<!-- Дата обновления -->
+			<div class="notification is-info is-light">
+				<p>
+					<strong>Дата последнего обновления:</strong> { time.Now().Format("02.01.2006") }
+				</p>
+				<p class="mt-2">
+					Используя сервис TextProof, вы соглашаетесь с условиями данной Политики конфиденциальности.
+				</p>
+			</div>
+			<!-- 1. Общие положения -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">1</span>
+					Общие положения
+				</h2>
+				<div class="content">
+					<p>
+						TextProof ("Сервис", "мы") серьезно относится к защите конфиденциальности пользователей. 
+						Данная Политика конфиденциальности описывает, какие данные мы собираем, как их используем и защищаем.
+					</p>
+					<p>
+						<strong>Основной принцип:</strong> Мы НЕ храним содержимое ваших текстов. 
+						В блокчейне сохраняется только криптографический хеш (SHA-256), по которому невозможно восстановить исходный текст.
+					</p>
+				</div>
+			</div>
+			<!-- 2. Какие данные мы собираем -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">2</span>
+					Какие данные мы собираем
+				</h2>
+				<div class="content">
+					<h3 class="subtitle is-5">2.1. Данные, сохраняемые в блокчейне (публичные)</h3>
+					<p>При депонировании текста в блокчейн записываются следующие данные:</p>
+					<ul>
+						<li><strong>Имя автора</strong> — указанное вами (может быть псевдонимом)</li>
+						<li><strong>Название произведения</strong> — заголовок текста</li>
+						<li><strong>Фрагменты текста</strong> — первые и последние 3 слова документа</li>
+						<li><strong>SHA-256 хеш</strong> — криптографический отпечаток полного текста</li>
+						<li><strong>Временная метка</strong> — точное время депонирования (UTC)</li>
+						<li><strong>Публичный ключ</strong> — опционально, если вы его предоставили</li>
+					</ul>
+					<div class="notification is-warning is-light mt-4">
+						<p>
+							<i class="fas fa-exclamation-triangle mr-2"></i>
+							<strong>Важно:</strong> Эти данные сохраняются в блокчейне навсегда и являются публичными. 
+							Любой человек может их просмотреть. Не указывайте конфиденциальную информацию в имени автора или названии произведения.
+						</p>
+					</div>
+					<h3 class="subtitle is-5 mt-5">2.2. Технические данные (временные)</h3>
+					<p>При использовании Сервиса мы можем собирать:</p>
+					<ul>
+						<li>IP-адрес (для защиты от спама и злоупотреблений)</li>
+						<li>Тип браузера и устройства</li>
+						<li>Время доступа к страницам</li>
+						<li>Cookies для функционирования сайта (flash messages)</li>
+					</ul>
+					<p class="mt-3">
+						Эти данные используются только для обеспечения работы Сервиса и не передаются третьим лицам.
+					</p>
+					<h3 class="subtitle is-5 mt-5">2.3. Что мы НЕ собираем</h3>
+					<ul>
+						<li>❌ Полный текст ваших документов</li>
+						<li>❌ Персональные данные (email, телефон, адрес)</li>
+						<li>❌ Данные платежных карт</li>
+						<li>❌ История браузера</li>
+						<li>❌ Геолокация</li>
+					</ul>
+				</div>
+			</div>
+			<!-- 3. Как мы используем данные -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">3</span>
+					Как мы используем данные
+				</h2>
+				<div class="content">
+					<table class="table is-fullwidth is-striped">
+						<thead>
+							<tr>
+								<th>Тип данных</th>
+								<th>Цель использования</th>
+								<th>Срок хранения</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Блокчейн данные</td>
+								<td>Доказательство авторства</td>
+								<td>Постоянно</td>
+							</tr>
+							<tr>
+								<td>IP-адрес</td>
+								<td>Защита от спама</td>
+								<td>30 дней</td>
+							</tr>
+							<tr>
+								<td>Cookies</td>
+								<td>Функционирование сайта</td>
+								<td>До закрытия сессии</td>
+							</tr>
+							<tr>
+								<td>Логи доступа</td>
+								<td>Отладка и безопасность</td>
+								<td>7 дней</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<!-- 4. Конфиденциальность ваших текстов -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">4</span>
+					Конфиденциальность ваших текстов
+				</h2>
+				<div class="content">
+					<div class="notification is-success is-light">
+						<h3 class="subtitle is-5">
+							<i class="fas fa-lock mr-2"></i>
+							Ваш текст остаётся у вас
+						</h3>
+						<p>
+							TextProof использует <strong>одностороннюю хеш-функцию SHA-256</strong>. 
+							Это означает, что:
+						</p>
+						<ul>
+							<li>По хешу <strong>невозможно</strong> восстановить исходный текст</li>
+							<li>Мы <strong>не видим</strong> и <strong>не сохраняем</strong> содержимое ваших документов</li>
+							<li>Даже если кто-то получит доступ к нашей базе данных, ваши тексты останутся в безопасности</li>
+						</ul>
+					</div>
+					<p class="mt-4">
+						<strong>Проверка текста:</strong> Для проверки вам нужно предоставить оригинальный текст. 
+						Система вычислит его хеш и сравнит с хешем в блокчейне. Сам текст при проверке также не сохраняется.
+					</p>
+				</div>
+			</div>
+			<!-- 5. Cookies -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">5</span>
+					Использование Cookies
+				</h2>
+				<div class="content">
+					<p>
+						Мы используем cookies для обеспечения работы Сервиса:
+					</p>
+					<table class="table is-fullwidth">
+						<thead>
+							<tr>
+								<th>Cookie</th>
+								<th>Назначение</th>
+								<th>Срок</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>flash_*</code></td>
+								<td>Временные уведомления (успех/ошибка)</td>
+								<td>60 секунд</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="mt-3">
+						Все cookies имеют флаг <code>HttpOnly</code> (защита от XSS) и <code>SameSite=Lax</code> (защита от CSRF).
+					</p>
+					<p>
+						<strong>Отключение cookies:</strong> Вы можете отключить cookies в настройках браузера, 
+						но это может повлиять на работу некоторых функций Сервиса (например, уведомлений).
+					</p>
+				</div>
+			</div>
+			<!-- 6. Безопасность данных -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">6</span>
+					Безопасность данных
+				</h2>
+				<div class="content">
+					<p>Мы применяем следующие меры безопасности:</p>
+					<ul>
+						<li><strong>Proof-of-Work</strong> — защита блокчейна от подделок</li>
+						<li><strong>Write-Ahead Logging (WAL)</strong> — защита от потери данных при сбоях</li>
+						<li><strong>Автоматические бэкапы</strong> — ежедневные резервные копии блокчейна</li>
+						<li><strong>Валидация входных данных</strong> — защита от инъекций и XSS</li>
+						<li><strong>HttpOnly cookies</strong> — защита от кражи сессий</li>
+						<li><strong>SameSite cookies</strong> — защита от CSRF атак</li>
+					</ul>
+					<div class="notification is-info is-light mt-4">
+						<p>
+							<i class="fas fa-code-branch mr-2"></i>
+							<strong>Open Source:</strong> Исходный код TextProof открыт и доступен на 
+							<a href="https://github.com/yourusername/textproof" target="_blank">GitHub</a>. 
+							Вы можете самостоятельно проверить, как реализована безопасность.
+						</p>
+					</div>
+				</div>
+			</div>
+			<!-- 7. Передача данных третьим лицам -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">7</span>
+					Передача данных третьим лицам
+				</h2>
+				<div class="content">
+					<div class="notification is-success is-light">
+						<p class="has-text-weight-semibold">
+							<i class="fas fa-check-circle mr-2"></i>
+							Мы НЕ продаём и НЕ передаём ваши данные третьим лицам.
+						</p>
+					</div>
+					<p>
+						<strong>Исключения:</strong> Мы можем раскрыть информацию только по требованию закона 
+						(судебное постановление, запрос правоохранительных органов).
+					</p>
+					<p class="mt-3">
+						<strong>Примечание:</strong> Данные в блокчейне являются публичными по своей природе. 
+						Любой человек может их просмотреть, если знает ID блока.
+					</p>
+				</div>
+			</div>
+			<!-- 8. Ваши права -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">8</span>
+					Ваши права
+				</h2>
+				<div class="content">
+					<p>Вы имеете право:</p>
+					<ul>
+						<li><strong>Доступ:</strong> Просмотреть данные, сохранённые в блокчейне (они публичны)</li>
+						<li><strong>Отзыв:</strong> Прекратить использование Сервиса в любое время</li>
+						<li><strong>Вопросы:</strong> Связаться с нами по поводу обработки данных</li>
+					</ul>
+					<div class="notification is-warning is-light mt-4">
+						<p>
+							<i class="fas fa-info-circle mr-2"></i>
+							<strong>Важно:</strong> Данные в блокчейне нельзя удалить или изменить. 
+							Это фундаментальное свойство технологии блокчейн, обеспечивающее неизменность записей.
+						</p>
+					</div>
+				</div>
+			</div>
+			<!-- 9. Дети -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">9</span>
+					Использование детьми
+				</h2>
+				<div class="content">
+					<p>
+						Сервис не предназначен для лиц младше 13 лет. 
+						Мы сознательно не собираем персональные данные детей. 
+						Если вы родитель и считаете, что ваш ребёнок предоставил нам персональные данные, 
+						пожалуйста, свяжитесь с нами.
+					</p>
+				</div>
+			</div>
+			<!-- 10. Изменения в политике -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">10</span>
+					Изменения в Политике конфиденциальности
+				</h2>
+				<div class="content">
+					<p>
+						Мы можем обновлять данную Политику конфиденциальности время от времени. 
+						О существенных изменениях мы уведомим пользователей через уведомление на главной странице сайта.
+					</p>
+					<p>
+						Дата последнего обновления всегда указана в начале документа. 
+						Продолжение использования Сервиса после изменений означает ваше согласие с новой редакцией Политики.
+					</p>
+				</div>
+			</div>
+			<!-- 11. Контакты -->
+			<div class="box">
+				<h2 class="title is-4">
+					<span class="tag is-info is-light mr-3">11</span>
+					Контактная информация
+				</h2>
+				<div class="content">
+					<p>
+						Если у вас есть вопросы по поводу данной Политики конфиденциальности или обработки ваших данных, 
+						пожалуйста, свяжитесь с нами:
+					</p>
+					<ul>
+						<li><strong>Email:</strong> <a href="mailto:privacy@textproof.example.com">privacy@textproof.example.com</a></li>
+						<li><strong>GitHub:</strong> <a href="https://github.com/yourusername/textproof/issues" target="_blank">Создать issue</a></li>
+					</ul>
+				</div>
+			</div>
+			<!-- Назад на главную -->
+			<div class="box has-background-light">
+				<div class="content has-text-centered">
+					<p class="mb-4">Вы прочитали нашу Политику конфиденциальности</p>
+					<div class="buttons is-centered">
+						@atoms.Button(atoms.ButtonParams{
+							Icon:       "fas fa-home",
+							Link:       "/",
+							LinkText:   "На главную",
+							ButtonType: "is-primary",
+						})
+						@atoms.Button(atoms.ButtonParams{
+							Icon:       "fas fa-info-circle",
+							Link:       "/about",
+							LinkText:   "О проекте",
+							ButtonType: "is-info is-light",
+						})
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

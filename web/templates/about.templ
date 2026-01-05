@@ -1,0 +1,310 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+
+templ About() {
+	@AboutContent()
+}
+
+templ AboutContent() {
+	<div class="columns is-centered">
+		<div class="column is-three-quarters">
+			<!-- Заголовок -->
+			@components.Header(components.HeaderParams{
+				Title:    "О проекте TextProof",
+				Subtitle: "Защита авторских прав через блокчейн-технологию",
+				Icon:     "fas fa-info-circle",
+			})
+			<!-- Что это такое -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-question-circle has-text-info mr-2"></i>
+					Что такое TextProof?
+				</h2>
+				<div class="content">
+					<p class="is-size-5">
+						<strong>TextProof</strong> — это система доказательства авторства текстовых документов, использующая технологию блокчейн для создания неизменяемой записи о существовании текста в определённый момент времени.
+					</p>
+					<p>
+						Вы можете зафиксировать криптографический отпечаток (хеш) вашего текста в блокчейне, что позволит в будущем доказать, что текст существовал на момент депонирования и не был изменён.
+					</p>
+				</div>
+			</div>
+			<!-- Как это работает -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-cogs has-text-info mr-2"></i>
+					Как это работает?
+				</h2>
+				<div class="content">
+					<div class="columns">
+						<div class="column">
+							<div class="notification is-info is-light">
+								<h3 class="subtitle is-5">
+									<span class="icon-text">
+										<span class="icon"><i class="fas fa-1"></i></span>
+										<span>Хеширование</span>
+									</span>
+								</h3>
+								<p>
+									Система вычисляет уникальный криптографический хеш (SHA-256) вашего текста. Это односторонняя функция — по хешу невозможно восстановить текст.
+								</p>
+							</div>
+						</div>
+						<div class="column">
+							<div class="notification is-success is-light">
+								<h3 class="subtitle is-5">
+									<span class="icon-text">
+										<span class="icon"><i class="fas fa-2"></i></span>
+										<span>Блокчейн</span>
+									</span>
+								</h3>
+								<p>
+									Хеш записывается в блокчейн с временной меткой. Каждый блок связан с предыдущим криптографически, что делает изменение прошлых записей невозможным.
+								</p>
+							</div>
+						</div>
+						<div class="column">
+							<div class="notification is-warning is-light">
+								<h3 class="subtitle is-5">
+									<span class="icon-text">
+										<span class="icon"><i class="fas fa-3"></i></span>
+										<span>Proof-of-Work</span>
+									</span>
+								</h3>
+								<p>
+									Для создания блока требуется вычислительная работа (майнинг). Это защищает блокчейн от спама и подделок.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Технические детали -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-microchip has-text-info mr-2"></i>
+					Технические детали
+				</h2>
+				<div class="content">
+					<table class="table is-fullwidth is-striped">
+						<tbody>
+							<tr>
+								<td><strong>Хеш-функция</strong></td>
+								<td>SHA-256 (256-бит)</td>
+							</tr>
+							<tr>
+								<td><strong>Алгоритм консенсуса</strong></td>
+								<td>Proof-of-Work</td>
+							</tr>
+							<tr>
+								<td><strong>Сложность майнинга</strong></td>
+								<td>4 ведущих нуля (конфигурируемо)</td>
+							</tr>
+							<tr>
+								<td><strong>Формат ID блоков</strong></td>
+								<td>000-000-001 ... 999-999-999, затем A-000-000-000</td>
+							</tr>
+							<tr>
+								<td><strong>Хранение данных</strong></td>
+								<td>JSON + WAL + автоматические бэкапы</td>
+							</tr>
+							<tr>
+								<td><strong>Время создания блока</strong></td>
+								<td>~2-5 секунд (зависит от сложности)</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<!-- Что сохраняется -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-database has-text-info mr-2"></i>
+					Что сохраняется в блокчейне?
+				</h2>
+				<div class="content">
+					<div class="notification is-warning is-light">
+						<p class="has-text-weight-semibold mb-3">
+							<i class="fas fa-shield-alt mr-2"></i>
+							Важно: Ваш текст НЕ сохраняется в системе!
+						</p>
+						<p>
+							Блокчейн хранит только метаданные и криптографический отпечаток:
+						</p>
+					</div>
+					<ul>
+						<li><strong>Имя автора</strong> — указанное вами при депонировании</li>
+						<li><strong>Название произведения</strong> — заголовок текста</li>
+						<li><strong>Фрагменты текста</strong> — первые и последние 3 слова (для идентификации)</li>
+						<li><strong>SHA-256 хеш</strong> — криптографический отпечаток полного текста</li>
+						<li><strong>Временная метка</strong> — точное время депонирования</li>
+						<li><strong>Публичный ключ</strong> — опционально, для цифровой подписи</li>
+					</ul>
+					<p class="mt-4">
+						<strong>Конфиденциальность:</strong> Никто, кроме вас, не может прочитать ваш текст. Но любой может проверить его подлинность, если вы предоставите оригинал.
+					</p>
+				</div>
+			</div>
+			<!-- Применение -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-lightbulb has-text-info mr-2"></i>
+					Сценарии использования
+				</h2>
+				<div class="content">
+					<div class="columns is-multiline">
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-book has-text-primary mr-2"></i>
+										Литературные произведения
+									</p>
+									<p class="is-size-7">
+										Зафиксируйте авторство рассказа, поэмы, романа или статьи до публикации.
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-flask has-text-info mr-2"></i>
+										Научные работы
+									</p>
+									<p class="is-size-7">
+										Подтвердите приоритет научного открытия или изобретения.
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-code has-text-success mr-2"></i>
+										Код и алгоритмы
+									</p>
+									<p class="is-size-7">
+										Защитите авторство программного кода или алгоритма.
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-briefcase has-text-warning mr-2"></i>
+										Деловые документы
+									</p>
+									<p class="is-size-7">
+										Зафиксируйте время создания контракта, предложения или спецификации.
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-newspaper has-text-danger mr-2"></i>
+										Журналистика
+									</p>
+									<p class="is-size-7">
+										Докажите, что материал существовал до публикации конкурентов.
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="column is-half">
+							<div class="card">
+								<div class="card-content">
+									<p class="title is-6">
+										<i class="fas fa-gavel has-text-link mr-2"></i>
+										Юридические документы
+									</p>
+									<p class="is-size-7">
+										Временная метка для свидетельских показаний или заявлений.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Ограничения -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-exclamation-triangle has-text-warning mr-2"></i>
+					Важные ограничения
+				</h2>
+				<div class="content">
+					<div class="message is-warning">
+						<div class="message-body">
+							<p><strong>TextProof НЕ является:</strong></p>
+							<ul>
+								<li>Юридически обязывающей регистрацией авторских прав</li>
+								<li>Заменой официальной регистрации в патентном ведомстве</li>
+								<li>Гарантией защиты в суде (но может использоваться как доказательство)</li>
+								<li>Хранилищем ваших текстов (храните оригиналы сами!)</li>
+							</ul>
+							<p class="mt-3">
+								<strong>Рекомендация:</strong> Используйте TextProof как дополнительное доказательство, а не единственное средство защиты. Для полной юридической защиты обратитесь к специалистам по интеллектуальной собственности.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Open Source -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fab fa-github has-text-dark mr-2"></i>
+					Open Source
+				</h2>
+				<div class="content">
+					<p>
+						TextProof — это проект с открытым исходным кодом. Вы можете:
+					</p>
+					<ul>
+						<li>Изучить код на <a href="https://github.com/yourusername/textproof" target="_blank">GitHub</a></li>
+						<li>Развернуть собственную инстанцию</li>
+						<li>Внести вклад в развитие проекта</li>
+						<li>Проверить безопасность реализации</li>
+					</ul>
+					<div class="buttons mt-4">
+						<a href="https://github.com/yourusername/textproof" class="button is-dark" target="_blank">
+							<span class="icon"><i class="fab fa-github"></i></span>
+							<span>Исходный код</span>
+						</a>
+						<a href="https://github.com/yourusername/textproof/issues" class="button is-link is-light" target="_blank">
+							<span class="icon"><i class="fas fa-bug"></i></span>
+							<span>Сообщить об ошибке</span>
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- Начать использование -->
+			<div class="box has-background-info-light">
+				<div class="content has-text-centered">
+					<h2 class="title is-4">Готовы начать?</h2>
+					<p class="subtitle is-6 mb-5">
+						Зафиксируйте авторство вашего текста прямо сейчас
+					</p>
+					<div class="buttons is-centered">
+						<a href="/deposit" class="button is-primary is-medium">
+							<span class="icon"><i class="fas fa-upload"></i></span>
+							<span>Депонировать текст</span>
+						</a>
+						<a href="/verify" class="button is-info is-medium is-light">
+							<span class="icon"><i class="fas fa-search"></i></span>
+							<span>Проверить текст</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
