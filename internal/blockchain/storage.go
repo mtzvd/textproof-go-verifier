@@ -268,7 +268,7 @@ func (s *Storage) ReadWAL() ([]*Block, error) {
 	}
 
 	// Читаем файл
-	data, err := os.ReadFile(s.walFile) // ✅ ИСПРАВЛЕНО: было ReadLine
+	data, err := os.ReadFile(s.walFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read WAL: %w", err)
 	}
