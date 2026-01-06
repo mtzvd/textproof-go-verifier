@@ -38,6 +38,13 @@ func BuildHomeNavBar(r *http.Request) NavBar {
 				Active: currentPath == "/about",
 				Align:  "end",
 			},
+			{
+				Label:  "Документация API",
+				Href:   "/docs",
+				Icon:   "fas fa-book",
+				Active: currentPath == "/docs",
+				Align:  "end",
+			},
 		},
 	}
 }

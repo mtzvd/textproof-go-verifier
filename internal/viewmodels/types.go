@@ -83,3 +83,23 @@ type FlashData struct {
 	Message     string
 	IsDuplicate bool
 }
+
+// DepositResponse для JSON API
+type DepositResponsePublic struct {
+	Success   bool      `json:"success"`
+	BlockID   string    `json:"block_id"`
+	Hash      string    `json:"hash"`
+	Timestamp time.Time `json:"timestamp"`
+	VerifyURL string    `json:"verify_url"`
+	QRCodeURL string    `json:"qr_code_url"`
+}
+
+// VerifyByIDRequest для JSON API
+type VerifyByIDRequestPublic struct {
+	ID string `json:"id"`
+}
+
+// VerifyByTextRequest для JSON API
+type VerifyByTextRequestPublic struct {
+	ID string `json:"id"`
+}

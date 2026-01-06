@@ -1,384 +1,356 @@
-
 # TextProof
 
-[English](README_en.md) | [Русский](README_ru.md)
+[English](README_en.md) | [Polski](README_pl.md)
 
-## System potwierdzania autorstwa tekstów z wykorzystaniem technologii blockchain
+## Система доказательства авторства текстов с использованием блокчейн-технологии
 
-TextProof to aplikacja webowa do rejestrowania autorstwa dokumentów tekstowych w blockchainie. System wykorzystuje skróty kryptograficzne i Proof-of-Work do stworzenia niezmiennego zapisu istnienia tekstu w określonym momencie.
+TextProof — это веб-приложение для фиксации авторства текстовых документов в блокчейне. Система использует криптографические хеши и Proof-of-Work для создания неизменяемой записи о существовании текста в определённый момент времени.
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ---
 
-## Możliwości
+## Возможности
 
-- **Deponowanie tekstów** — Zarejestruj autorstwo swojego tekstu w blockchainie
-- **Weryfikacja autentyczności** — Sprawdź tekst po ID lub pełnej treści
-- **Blockchain z Proof-of-Work** — Ochrona przed fałszowaniem przez wydobywanie bloków
-- **Niezawodne przechowywanie** — WAL (Write-Ahead Logging) + automatyczne kopie zapasowe
-- **Kody QR** — Do szybkiej weryfikacji na urządzeniach mobilnych
-- **Osadzalne odznaki** — Widżety HTML dla stron internetowych
-- **Szybkie wyszukiwanie** — O(1) wyszukiwanie duplikatów przez indeksowanie
-- **Nowoczesny interfejs** — Bulma CSS + Alpine.js
+- **Депонирование текстов** — зафиксируйте авторство вашего текста в блокчейне
+- **Проверка подлинности** — проверьте текст по ID или полному содержимому
+- **Блокчейн с Proof-of-Work** — защита от подделки через майнинг блоков
+- **Надёжное хранение** — WAL (Write-Ahead Logging) + автоматические бэкапы
+- **QR-коды** — для быстрой проверки на мобильных устройствах
+- **Встраиваемые бейджи** — HTML-виджеты для сайтов
+- **Быстрый поиск** — O(1) поиск дубликатов через индексацию
+- **Современный UI** — Bulma CSS + Alpine.js
 
 ---
 
-## Szybki start
+## Быстрый старт
 
-### Wymagania
+### Требования
 
-- [Go](https://golang.org/dl/) 1.21 lub nowszy
-- [Templ](https://templ.guide/) do generowania szablonów
+- [Go](https://golang.org/dl/) 1.21 или новее
+- [Templ](https://templ.guide/) для генерации шаблонов
 
-### Instalacja
-
-#### Sklonuj repozytorium
+### Установка
 
 ```bash
-git clone https://github.com/yourusername/textproof.git
+# Клонируйте репозиторий
+git https://github.com/mtzvd/textproof-go-verifier.git
 cd textproof
-```
 
-#### Zainstaluj zależności
-
-```bash
+# Установите зависимости
 go mod download
-```
 
-#### Zainstaluj templ (jeśli jeszcze nie zainstalowany)
-
-```bash
+# Установите templ (если ещё не установлен)
 go install github.com/a-h/templ/cmd/templ@latest
-```
 
-#### Wygeneruj szablony
-
-```bash
+# Сгенерируйте шаблоны
 templ generate
-```
 
-#### Uruchom serwer
-
-```bash
+# Запустите сервер
 go run cmd/server/main.go
 ```
 
-Aplikacja będzie dostępna pod adresem: **<http://localhost:8080>**
+Приложение будет доступно по адресу: **<http://localhost:8080>**
 
 ---
 
-## Użycie
+## Использование
 
-### Deponowanie tekstu
+### Депонирование текста
 
-1. Przejdź do `/deposit`
-2. Wypełnij formularz:
-   - Imię autora (Imię i nazwisko lub pseudonim)
-   - Tytuł utworu
-   - Pełny tekst dokumentu
-   - (Opcjonalnie) Klucz publiczny dla podpisu elektronicznego
-3. Kliknij "Zarejestruj w blockchainie"
-4. Otrzymaj unikalny ID i kod QR
+1. Перейдите на `/deposit`
+2. Заполните форму:
+   - Имя автора (ФИО или псевдоним)
+   - Название произведения
+   - Полный текст документа
+   - (Опционально) Публичный ключ для электронной подписи
+3. Нажмите "Зафиксировать в блокчейне"
+4. Получите уникальный ID и QR-код
 
-### Weryfikacja tekstu
+### Проверка текста
 
-**Po identyfikatorze:**
+**По идентификатору:**
 
-1. Przejdź do `/verify`
-2. Wybierz zakładkę "Po identyfikatorze"
-3. Wprowadź ID bloku (np.: `000-000-001`)
-4. Otrzymaj informacje o tekście
+1. Перейдите на `/verify`
+2. Выберите вкладку "По идентификатору"
+3. Введите ID блока (например: `000-000-001`)
+4. Получите информацию о тексте
 
-**Po treści:**
+**По содержимому:**
 
-1. Przejdź do `/verify`
-2. Wybierz zakładkę "Po tekście"
-3. Wklej pełny tekst dokumentu
-4. System obliczy skrót i sprawdzi obecność w blockchainie
+1. Перейдите на `/verify`
+2. Выберите вкладку "По тексту"
+3. Вставьте полный текст документа
+4. Система вычислит хеш и проверит наличие в блокчейне
 
-**Bezpośredni link:**
+**Прямая ссылка:**
 
-- Otwórz `/verify/{id}` dla automatycznej weryfikacji
+- Откройте `/verify/{id}` для автоматической проверки
 
 ---
 
-## Architektura
+## Архитектура
 
-### Struktura projektu
+### Структура проекта
 
-```bash
+```go
 textproof/
 ├── cmd/
 │   └── server/
-│       └── main.go              # Punkt wejścia aplikacji
+│       └── main.go              # Точка входа приложения
 ├── internal/
-│   ├── api/                     # Obsługa HTTP i routing
+│   ├── api/                     # HTTP handlers и маршруты
 │   │   ├── api.go
-│   │   ├── flash.go             # Wiadomości flash (cookies)
+│   │   ├── flash.go             # Flash messages (cookies)
 │   │   └── map_stats.go
-│   ├── blockchain/              # Logika blockchain
-│   │   ├── block.go             # Struktura bloku
-│   │   ├── blockchain.go        # Główna logika łańcucha
-│   │   ├── storage.go           # Praca z plikami
-│   │   ├── errors.go            # Typy błędów
-│   │   └── id_generator.go      # Generator ID bloków
-│   ├── config/                  # Konfiguracja
+│   ├── blockchain/              # Логика блокчейна
+│   │   ├── block.go             # Структура блока
+│   │   ├── blockchain.go        # Основная логика цепи
+│   │   ├── storage.go           # Работа с файлами
+│   │   ├── errors.go            # Типы ошибок
+│   │   └── id_generator.go      # Генерация ID блоков
+│   ├── config/                  # Конфигурация
 │   │   └── config.go
-│   └── viewmodels/              # Modele danych dla UI
+│   └── viewmodels/              # Модели данных для UI
 │       ├── types.go
 │       ├── navbar.go
 │       └── build-navbar.go
 ├── web/
-│   ├── static/                  # Pliki statyczne
+│   ├── static/                  # Статические файлы
 │   │   ├── css/
 │   │   │   └── styles.css
 │   │   └── js/
 │   │       └── app.js
-│   └── templates/               # Szablony Templ
+│   └── templates/               # Templ шаблоны
 │       ├── base.templ
 │       ├── home.templ
 │       ├── deposit.templ
 │       ├── deposit_result_page.templ
 │       ├── verify.templ
 │       ├── verify_result.templ
-│       └── components/          # Komponenty wielokrotnego użytku
-├── data/                        # Dane blockchain (nie w git)
-│   ├── blockchain.json          # Główny łańcuch
+│       └── components/          # Переиспользуемые компоненты
+├── data/                        # Данные блокчейна (не в git)
+│   ├── blockchain.json          # Основная цепь
 │   ├── wal.json                 # Write-Ahead Log
-│   └── backups/                 # Automatyczne kopie zapasowe
+│   └── backups/                 # Автоматические бэкапы
 ├── go.mod
 ├── go.sum
-├── modd.conf                    # Konfiguracja hot reload
+├── modd.conf                    # Hot reload конфигурация
 ├── .gitignore
 └── README.md
 ```
 
-### Blockchain
+### Блокчейн
 
-**Struktura bloku:**
+**Структура блока:**
 
-```bash
+```go
 type Block struct {
     ID        string       // "000-000-001"
-    PrevHash  string       // Skrót poprzedniego bloku
-    Timestamp time.Time    // Czas utworzenia
-    Data      DepositData  // Dane o tekście
+    PrevHash  string       // Хеш предыдущего блока
+    Timestamp time.Time    // Время создания
+    Data      DepositData  // Данные о тексте
     Nonce     int          // Proof-of-Work nonce
-    Hash      string       // Skrót SHA-256 bloku
+    Hash      string       // SHA-256 хеш блока
 }
 
 type DepositData struct {
-    AuthorName  string  // Imię autora
-    Title       string  // Tytuł
-    TextStart   string  // Pierwsze 3 słowa
-    TextEnd     string  // Ostatnie 3 słowa
-    ContentHash string  // Skrót SHA-256 pełnego tekstu
-    PublicKey   string  // (Opcjonalnie) Klucz publiczny
+    AuthorName  string  // Имя автора
+    Title       string  // Название
+    TextStart   string  // Первые 3 слова
+    TextEnd     string  // Последние 3 слова
+    ContentHash string  // SHA-256 хеш полного текста
+    PublicKey   string  // (Опционально) Публичный ключ
 }
 ```
 
 **Proof-of-Work:**
 
-- Konfigurowalna trudność (domyślnie: 4 zera)
-- Wydobywanie bloku zajmuje kilka sekund
-- Ochrona przed fałszowaniem przeszłych wpisów
+- Конфигурируемая сложность (по умолчанию: 4 нуля)
+- Майнинг блока занимает несколько секунд
+- Защита от подделки прошлых записей
 
-**Przechowywanie:**
+**Хранение:**
 
-- Pliki JSON dla prostoty
-- WAL dla ochrony przed awariami
-- Automatyczne kopie zapasowe (przechowywane ostatnie 5)
-- Atomic write przez pliki tymczasowe
+- JSON файлы для простоты
+- WAL для защиты от сбоев
+- Автоматические бэкапы (хранятся последние 5)
+- Atomic write через временные файлы
 
 ---
 
-## Konfiguracja
+## Конфигурация
 
-### Flagi wiersza poleceń
+### Флаги командной строки
 
 ```bash
-go run cmd/server/main.go [opcje]
-```
+go run cmd/server/main.go [опции]
 
-Opcje:
+Опции:
   -data-dir string
-        Katalog do przechowywania danych (domyślnie "data")
+        Директория для хранения данных (default "data")
   -port int
-        Port dla serwera HTTP (domyślnie 8080)
+        Порт для HTTP сервера (default 8080)
   -difficulty int
-        Trudność wydobywania (liczba zer) (domyślnie 4)
+        Сложность майнинга (количество нулей) (default 4)
   -debug
-        Włącz tryb debugowania
-
-### Przykłady
-
-#### Uruchom na porcie 9090 z danymi w ./my_data
-
-```bash
-go run cmd/server/main.go -data-dir ./my_data -port 9090
+        Включить режим отладки
 ```
 
-#### Uruchom z obniżoną trudnością dla testów
+### Примеры
 
 ```bash
+# Запуск на порту 9090 с данными в ./my_data
+go run cmd/server/main.go -data-dir ./my_data -port 9090
+
+# Запуск с пониженной сложностью для тестирования
 go run cmd/server/main.go -difficulty 3 -debug
 ```
 
 ---
 
-## Rozwój
+## Разработка
 
-### Hot Reload z modd
-
-#### Zainstaluj modd
+### Hot Reload с modd
 
 ```bash
+# Установите modd
 go install github.com/cortesi/modd/cmd/modd@latest
-```
 
-#### Uruchom z automatycznym przeładowaniem
-
-```bash
+# Запустите с автоперезагрузкой
 modd
 ```
 
-Przy zmianie plików `.templ` automatycznie uruchomi się `templ generate` i serwer się zrestartuje.
+При изменении `.templ` файлов автоматически запустится `templ generate` и сервер перезапустится.
 
-### Struktura API
+### Структура API
 
-| Metoda | Ścieżka | Opis |
+| Метод | Путь | Описание |
 | --- | --- | --- |
-| GET | `/` | Strona główna |
-| GET | `/deposit` | Formularz deponowania |
-| POST | `/api/deposit` | Przetwarzanie deponowania |
-| GET | `/deposit/result/{id}` | Wynik deponowania |
-| GET | `/verify` | Formularz weryfikacji |
-| POST | `/api/verify/id` | Weryfikacja po ID |
-| POST | `/api/verify/text` | Weryfikacja po tekście |
-| GET | `/verify/result/{id}` | Wynik weryfikacji |
-| GET | `/verify/{id}` | Bezpośredni link do weryfikacji |
-| GET | `/api/qrcode/{id}` | Generowanie kodu QR |
-| GET | `/api/badge/{id}` | Odznaka HTML do osadzania |
-| GET | `/api/stats` | Statystyki blockchain |
+| GET | `/` | Главная страница |
+| GET | `/deposit` | Форма депонирования |
+| POST | `/api/deposit` | Обработка депонирования |
+| GET | `/deposit/result/{id}` | Результат депонирования |
+| GET | `/verify` | Форма проверки |
+| POST | `/api/verify/id` | Проверка по ID |
+| POST | `/api/verify/text` | Проверка по тексту |
+| GET | `/verify/result/{id}` | Результат проверки |
+| GET | `/verify/{id}` | Прямая ссылка на проверку |
+| GET | `/api/qrcode/{id}` | Генерация QR-кода |
+| GET | `/api/badge/{id}` | HTML-бейдж для встраивания |
+| GET | `/api/stats` | Статистика блокчейна |
 
 ---
 
-## Bezpieczeństwo
+## Безопасность
 
-### Zaimplementowane środki
+### Реализованные меры
 
-- ✅ **Walidacja danych wejściowych** — maksymalna długość tekstu, sprawdzanie pól
-- ✅ **HttpOnly cookies** — ochrona wiadomości flash przed XSS
-- ✅ **Proof-of-Work** — ochrona przed spamem
-- ✅ **Indeks skrótów treści** — zapobieganie duplikatom
-- ✅ **Atomic writes** — ochrona przed uszkodzeniem danych
+- ✅ **Валидация входных данных** — максимальная длина текста, проверка полей
+- ✅ **HttpOnly cookies** — защита flash messages от XSS
+- ✅ **Proof-of-Work** — защита от спама
+- ✅ **Content hash index** — предотвращение дубликатов
+- ✅ **Atomic writes** — защита от повреждения данных
 
-### Zalecenia dla produkcji
+### Рекомендации для production
 
-- ⚠️ Dodaj **ograniczenie żądań** (np. przez middleware)
-- ⚠️ Używaj **HTTPS** (certyfikaty TLS)
-- ⚠️ Skonfiguruj **ochronę CSRF**
-- ⚠️ Dodaj **logowanie** (zerolog, zap)
-- ⚠️ Zaimplementuj **monitorowanie** (Prometheus + Grafana)
-- ⚠️ Skonfiguruj **kopie zapasowe** danych
+- ⚠️ Добавьте **rate limiting** (например, через middleware)
+- ⚠️ Используйте **HTTPS** (TLS сертификаты)
+- ⚠️ Настройте **CSRF защиту**
+- ⚠️ Добавьте **логирование** (zerolog, zap)
+- ⚠️ Реализуйте **мониторинг** (Prometheus + Grafana)
+- ⚠️ Настройте **резервное копирование** данных
 
 ---
 
-## Wydajność
+## Производительность
 
-| Operacja | Złożoność | Czas |
+| Операция | Сложность | Время |
 | --- | --- | --- |
-| Wyszukiwanie po ID | O(n) | ~1ms dla 1000 bloków |
-| Wyszukiwanie po skrócie | O(1) | <1ms (indeksowanie) |
-| Wydobywanie bloku | - | ~2-5s (difficulty=4) |
-| Walidacja łańcucha | O(n) | ~10ms dla 1000 bloków |
+| Поиск по ID | O(n) | ~1ms для 1000 блоков |
+| Поиск по хешу | O(1) | <1ms (индексация) |
+| Майнинг блока | - | ~2-5s (difficulty=4) |
+| Валидация цепи | O(n) | ~10ms для 1000 блоков |
 
 ---
 
-##### Testowanie
-
-#### Uruchom wszystkie testy
+## Тестирование
 
 ```bash
+# Запуск всех тестов
 go test ./...
-```
-#### Testy z pokryciem
 
-```bash
+# Тесты с покрытием
 go test -cover ./...
-```
 
-#### Generuj raport pokrycia
-
-```bash
+# Генерация отчёта о покрытии
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out
 ```
 
 ---
 
-## TODO / Plan rozwoju
+## TODO / Roadmap
 
-- [ ] Dodaj testy jednostkowe dla blockchain
-- [ ] Dodaj testy integracyjne dla API
-- [ ] Zaimplementuj ograniczenie żądań
-- [ ] Dodaj strukturyzowane logowanie
-- [ ] Wsparcie dla PostgreSQL/MySQL zamiast JSON
-- [ ] Klucze API dla automatyzacji
-- [ ] Eksport blockchain w różnych formatach
-- [ ] Wsparcie dla podpisów cyfrowych (ECDSA, RSA)
-- [ ] Konteneryzacja Docker
-- [ ] Pipeline CI/CD (GitHub Actions)
-- [ ] Metryki Prometheus
-- [ ] Dokumentacja Swagger/OpenAPI
-
----
-
-## Wkład w rozwój
-
-Contributions are welcome! Proszę:
-
-1. Sforkuj projekt
-2. Utwórz branch z funkcją (`git checkout -b feature/AmazingFeature`)
-3. Zatwierdź zmiany (`git commit -m 'Add some AmazingFeature'`)
-4. Wypchnij do brancha (`git push origin feature/AmazingFeature`)
-5. Otwórz Pull Request
+- [ ] Добавить unit тесты для blockchain
+- [ ] Добавить integration тесты для API
+- [ ] Реализовать rate limiting
+- [ ] Добавить структурированное логирование
+- [ ] Поддержка PostgreSQL/MySQL вместо JSON
+- [ ] API ключи для автоматизации
+- [ ] Экспорт блокчейна в различных форматах
+- [ ] Поддержка цифровых подписей (ECDSA, RSA)
+- [ ] Docker контейнеризация
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Метрики Prometheus
+- [ ] Swagger/OpenAPI документация
 
 ---
 
-## Licencja
+## Contributing
 
-Ten projekt jest dystrybuowany na licencji MIT. Szczegóły w pliku `LICENSE`.
+Contributions are welcome! Пожалуйста:
+
+1. Fork проект
+2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
+4. Push в branch (`git push origin feature/AmazingFeature`)
+5. Откройте Pull Request
 
 ---
 
-## 👤 Autor
+## Лицензия
 
-### **Georgiy Agafonov**
+Этот проект распространяется под лицензией MIT. См. файл `LICENSE` для подробностей.
+
+---
+
+## 👤 Автор
+
+### **Георгий Агафонов**
 
 - GitHub: [@mtzvd](https://github.com/mtzvd)
 - Email: <info@web-n-roll.pl>
 
 ---
 
-## Podziękowania
+## Благодарности
 
-- [Bulma](https://bulma.io/) — framework CSS
-- [Alpine.js](https://alpinejs.dev/) — lekki framework JS
-- [Templ](https://templ.guide/) — type-safe szablony dla Go
-- [Gorilla Mux](https://github.com/gorilla/mux) — router HTTP
-- [go-qrcode](https://github.com/skip2/go-qrcode) — generowanie kodów QR
-
----
-
-## Dodatkowe zasoby
-
-- [Dokumentacja Go](https://golang.org/doc/)
-- [Przewodnik Templ](https://templ.guide/)
-- [Podstawy Blockchain](https://en.wikipedia.org/wiki/Blockchain)
+- [Bulma](https://bulma.io/) — CSS фреймворк
+- [Alpine.js](https://alpinejs.dev/) — легковесный JS фреймворк
+- [Templ](https://templ.guide/) — type-safe шаблоны для Go
+- [Gorilla Mux](https://github.com/gorilla/mux) — HTTP роутер
+- [go-qrcode](https://github.com/skip2/go-qrcode) — генерация QR-кодов
 
 ---
 
-**⭐ Jeśli podoba Ci się projekt — dodaj gwiazdkę na GitHubie!**
+## Дополнительные ресурсы
+
+- [Документация Go](https://golang.org/doc/)
+- [Templ Guide](https://templ.guide/)
+- [Blockchain Basics](https://en.wikipedia.org/wiki/Blockchain)
+
+---
+
+**⭐ Если проект вам понравился — поставьте звезду на GitHub!**

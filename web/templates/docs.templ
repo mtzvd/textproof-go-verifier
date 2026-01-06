@@ -1,0 +1,97 @@
+package templates
+
+import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/web/templates/components/atoms"
+
+templ Docs() {
+	@DocsContent()
+}
+
+templ DocsContent() {
+	<div class="columns is-centered">
+		<div class="column is-three-quarters">
+			<!-- Header -->
+			@components.Header(components.HeaderParams{
+				Title:    "Документация API",
+				Subtitle: "Полное описание всех эндпоинтов TextProof API",
+				Icon:     "fas fa-book",
+			})
+			<!-- Quick Links -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-bolt mr-2"></i>
+					Быстрый старт
+				</h2>
+				<div class="content">
+					<p><strong>Base URL:</strong> <code>http://localhost:8080</code></p>
+					<p><strong>Swagger UI:</strong> <a href="/swagger/index.html">/swagger/index.html</a></p>
+					<p><strong>OpenAPI JSON:</strong> <a href="/swagger/doc.json">/swagger/doc.json</a></p>
+				</div>
+			</div>
+			<!-- Embedded Swagger UI -->
+			<div class="box">
+				<h2 class="title is-4">
+					<i class="fas fa-code mr-2"></i>
+					Интерактивная документация
+				</h2>
+				<div class="content">
+					<p>Используйте форму ниже для тестирования API прямо в браузере:</p>
+				</div>
+				<!-- Swagger UI будет загружен здесь -->
+				<div
+					x-data="{ loaded: false }"
+					x-init="
+                        const script = document.createElement('script');
+                        script.src = 'https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-bundle.js';
+                        script.onload = () => {
+                            const ui = SwaggerUIBundle({
+                                url: '/swagger/doc.json',
+                                dom_id: '#swagger-ui',
+                                deepLinking: true,
+                                presets: [
+                                    SwaggerUIBundle.presets.apis,
+                                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                                ],
+                                layout: 'BaseLayout'
+                            });
+                            loaded = true;
+                        };
+                        document.head.appendChild(script);
+                        
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.type = 'text/css';
+                        link.href = 'https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui.css';
+                        document.head.appendChild(link);
+                    "
+				>
+					<div x-show="!loaded" class="has-text-centered py-6">
+						<div class="loading-spinner mb-4"></div>
+						<p class="subtitle is-6">Загрузка Swagger UI...</p>
+					</div>
+					<div id="swagger-ui" x-show="loaded"></div>
+				</div>
+			</div>
+			<!-- Buttons Section -->
+			<div class="mb-6">
+				<div class="buttons is-centered mt-4">
+					@atoms.Button(atoms.ButtonParams{
+						LinkText:   "Открыть Swagger UI",
+						Icon:       "fas fa-external-link-alt",
+						Link:       "/swagger/index.html",
+						ButtonType: "is-info",
+					})
+					@atoms.Button(atoms.ButtonParams{
+						LinkText:   "Скачать OpenAPI spec",
+						Icon:       "fas fa-download",
+						Link:       "/swagger/doc.json",
+						ButtonType: "is-info is-light",
+						Attributes: templ.Attributes{
+							"download": "openapi.json",
+						},
+					})
+				</div>
+			</div>
+		</div>
+	</div>
+}

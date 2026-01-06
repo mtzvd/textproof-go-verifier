@@ -10,9 +10,12 @@
 
 # Output of the go coverage tool
 *.out
+coverage.html
+coverage.txt
 
 # Go workspace file
 go.work
+go.work.sum
 
 # Collector output file
 all_code.txt
@@ -24,6 +27,7 @@ vendor/
 bin/
 dist/
 build/
+tmp/
 
 # IDE - VSCode
 .vscode/*
@@ -62,11 +66,19 @@ $RECYCLE.BIN/
 # Templ generated files
 *_templ.go
 
+# Swagger generated files
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
 # Data directory (blockchain storage)
 data/
 *.json
 !go.mod
 !go.sum
+!package.json
+!package-lock.json
+!tsconfig.json
 
 # Backups
 *.bak
@@ -74,10 +86,12 @@ data/
 *.old
 *.swp
 *.swo
+backups/
 
 # Logs
 *.log
 logs/
+build-errors.log
 
 # Environment variables
 .env
@@ -88,16 +102,14 @@ logs/
 debug
 __debug_bin
 
-# Air live reload (если используете)
+# Air live reload
 tmp/
-.air.toml
+.air.toml.local
 
 # Modd config backup
 modd.conf.bak
 
 # Coverage reports
-coverage.txt
-coverage.html
 *.coverprofile
 
 # Compiled Object files
@@ -118,13 +130,16 @@ yarn.lock
 .local/
 local/
 
-# Certificate files (если добавите HTTPS)
+# Certificate files
 *.pem
 *.key
 *.crt
 *.cert
 
-# Database files (на случай если добавите SQLite)
+# Database files
 *.db
 *.sqlite
 *.sqlite3
+
+# Task runner cache
+.task/

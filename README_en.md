@@ -1,5 +1,7 @@
 # TextProof
 
+[Русский](README.md) | [Polski](README_pl.md)
+
 ## Text Authorship Proof System Using Blockchain Technology
 
 TextProof is a web application for recording authorship of text documents in a blockchain. The system uses cryptographic hashes and Proof-of-Work to create an immutable record of a text's existence at a specific point in time.

@@ -6,6 +6,8 @@ import (
 	"blockchain-verifier/internal/blockchain"
 
 	"github.com/gorilla/mux"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const (
@@ -42,6 +44,7 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/about", api.handleAboutPage).Methods("GET")
 	api.router.HandleFunc("/privacy", api.handlePrivacyPage).Methods("GET")
 	api.router.HandleFunc("/terms", api.handleTermsPage).Methods("GET")
+	api.router.HandleFunc("/docs", api.handleDocsPage).Methods("GET")
 	// API routes
 	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
 	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
@@ -51,12 +54,26 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/api/qrcode/{id}", api.handleQRCode).Methods("GET")
 	api.router.HandleFunc("/api/badge/{id}", api.handleBadge).Methods("GET")
 
+	// JSON API v1 (PUBLIC API)
+	api.router.HandleFunc("/api/v1/deposit", api.handleDepositJSON).Methods("POST")
+	api.router.HandleFunc("/api/v1/verify/id", api.handleVerifyByIDJSON).Methods("POST")
+	api.router.HandleFunc("/api/v1/verify/text", api.handleVerifyByTextJSON).Methods("POST")
+	api.router.HandleFunc("/api/v1/stats", api.handleStats).Methods("GET")
+	api.router.HandleFunc("/api/v1/blockchain", api.handleBlockchainInfo).Methods("GET")
+
 	// Static files
 	fs := http.FileServer(http.Dir("web/static"))
 	api.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// 404 handler
 	api.router.NotFoundHandler = http.HandlerFunc(api.handleNotFound)
+	// Swagger UI route
+	api.router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"), // URL к swagger spec
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("list"),
+		httpSwagger.DomID("swagger-ui"),
+	))
 }
 
 // ServeHTTP реализует интерфейс http.Handler

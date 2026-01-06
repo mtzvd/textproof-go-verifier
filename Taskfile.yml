@@ -6,202 +6,311 @@ vars:
   DATA_DIR: data
   PORT: 8080
   DIFFICULTY: 4
-  
-  # Цвета для вывода
-  CYAN: "\033[0;36m"
-  GREEN: "\033[0;32m"
-  RED: "\033[0;31m"
-  NC: "\033[0m"
+  MAIN_FILE: cmd/server/main.go
+
+env:
+  CGO_ENABLED: 0
 
 tasks:
   default:
     desc: Показать справку
     cmds:
-      - task --list-all
+      - task --list
 
-  all:
-    desc: Полная сборка проекта
-    cmds:
-      - task: clean
-      - task: templ
-      - task: build
+  # =====================================================================
+  # УСТАНОВКА И НАСТРОЙКА
+  # =====================================================================
 
-  install-deps:
-    desc: Установить зависимости
+  install-tools:
+    desc: Установить необходимые инструменты (templ, swag, air)
     cmds:
-      - echo "{{.CYAN}}Установка зависимостей...{{.NC}}"
+      - echo "Установка инструментов..."
+      - go install github.com/a-h/templ/cmd/templ@latest
+      - go install github.com/swaggo/swag/cmd/swag@latest
+      - go install github.com/air-verse/air@latest
+      - echo "✓ Инструменты установлены"
+
+  deps:
+    desc: Установить зависимости проекта
+    cmds:
+      - echo "Установка зависимостей..."
       - go mod download
       - go mod verify
+      - echo "✓ Зависимости установлены"
 
-  install-templ:
-    desc: Установить Templ
+  setup:
+    desc: Полная настройка проекта (инструменты + зависимости + генерация)
     cmds:
-      - echo "{{.CYAN}}Установка Templ...{{.NC}}"
-      - go install github.com/a-h/templ/cmd/templ@latest
+      - task: install-tools
+      - task: deps
+      - task: generate
+      - echo "✓ Проект готов к работе!"
+      - echo "Запустите 'task run' для старта сервера"
+
+  # =====================================================================
+  # ГЕНЕРАЦИЯ
+  # =====================================================================
 
   templ:
-    desc: Генерация темплейтов
+    desc: Сгенерировать Templ шаблоны
     cmds:
-      - |
-        echo "{{.CYAN}}Генерация темплейтов...{{.NC}}"
-        if ! command -v templ &> /dev/null; then
-          echo "{{.RED}}Templ не установлен. Запустите: task install-templ{{.NC}}"
-          exit 1
-        fi
-        templ generate
+      - echo "Генерация Templ шаблонов..."
+      - templ generate
+      - echo "✓ Templ шаблоны сгенерированы"
+
+  swagger:
+    desc: Сгенерировать Swagger документацию
+    cmds:
+      - echo "Генерация Swagger документации..."
+      - swag init -g {{.MAIN_FILE}} -o docs --parseDependency --parseInternal --exclude web/templates
+      - echo "✓ Swagger документация сгенерирована"
+      - task: fix-docs
+
+  fix-docs:
+    desc: Исправить известную ошибку в docs/docs.go
+    cmds:
+      - go run scripts/fixdocs.go
+    sources:
+      - docs/docs.go
+    silent: true
+
+  generate:
+    desc: Сгенерировать всё (templ + swagger)
+    cmds:
+      - task: templ
+      - task: swagger
+      - echo "✓ Генерация завершена"
+
+  # =====================================================================
+  # СБОРКА И ЗАПУСК
+  # =====================================================================
 
   build:
-    desc: Собрать проект
-    deps: [templ]
+    desc: Собрать приложение
+    deps:
+      - templ
     cmds:
-      - |
-        echo "{{.CYAN}}Сборка проекта...{{.NC}}"
-        mkdir -p {{.BUILD_DIR}}
-        go build -o {{.BUILD_DIR}}/{{.APP_NAME}} ./cmd/server/main.go
-        echo "{{.GREEN}}✓ Сборка завершена: {{.BUILD_DIR}}/{{.APP_NAME}}{{.NC}}"
+      - echo "Сборка приложения..."
+      - mkdir -p {{.BUILD_DIR}}
+      - go build -ldflags="-s -w" -o {{.BUILD_DIR}}/{{.APP_NAME}} {{.MAIN_FILE}}
+      - echo "✓ Сборка завершена"
+    sources:
+      - '**/*.go'
+      - '**/*.templ'
+    generates:
+      - '{{.BUILD_DIR}}/{{.APP_NAME}}'
 
   run:
     desc: Запустить сервер
-    deps: [build]
+    deps:
+      - generate
     cmds:
-      - |
-        echo "{{.CYAN}}Запуск сервера на порту {{.PORT}}...{{.NC}}"
-        ./{{.BUILD_DIR}}/{{.APP_NAME}} -port {{.PORT}} -difficulty {{.DIFFICULTY}}
+      - echo "Запуск сервера..."
+      - go run {{.MAIN_FILE}} -port {{.PORT}} -difficulty {{.DIFFICULTY}}
 
   dev:
-    desc: Запуск в режиме разработки (с авто-пересборкой темплейтов)
+    desc: Запустить в режиме разработки с hot reload (air)
+    deps:
+      - templ
     cmds:
-      - |
-        echo "{{.CYAN}}Режим разработки...{{.NC}}"
-        echo "{{.CYAN}}Запуск templ в watch режиме...{{.NC}}"
-        (templ generate --watch &)
-        sleep 2
-        echo "{{.CYAN}}Запуск air для hot-reload...{{.NC}}"
-        if command -v air &> /dev/null; then
-          air
-        else
-          echo "{{.RED}}Air не установлен. Установите: go install github.com/cosmtrek/air@latest{{.NC}}"
-          echo "{{.CYAN}}Запуск без hot-reload...{{.NC}}"
-          task: run
-        fi
+      - echo "Режим разработки (hot reload)..."
+      - air
+
+  dev-modd:
+    desc: Запустить в режиме разработки с modd
+    cmds:
+      - echo "Режим разработки (modd)..."
+      - modd
+
+  # =====================================================================
+  # ТЕСТИРОВАНИЕ
+  # =====================================================================
 
   test:
     desc: Запустить тесты
     cmds:
-      - echo "{{.CYAN}}Запуск тестов...{{.NC}}"
+      - echo "Запуск тестов..."
       - go test -v ./...
 
   test-cover:
-    desc: Тесты с покрытием
+    desc: Запустить тесты с покрытием
     cmds:
-      - |
-        echo "{{.CYAN}}Запуск тестов с покрытием...{{.NC}}"
-        go test -coverprofile=coverage.out ./...
-        go tool cover -html=coverage.out -o coverage.html
-        echo "{{.GREEN}}✓ Отчёт о покрытии: coverage.html{{.NC}}"
+      - echo "Запуск тестов с покрытием..."
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - echo "✓ Отчёт о покрытии создан"
 
-  clean:
-    desc: Очистить собранные файлы
+  test-race:
+    desc: Запустить тесты с детектором гонок
     cmds:
-      - |
-        echo "{{.CYAN}}Очистка...{{.NC}}"
-        rm -rf {{.BUILD_DIR}}
-        rm -f coverage.out coverage.html
-        find . -name "*_templ.go" -type f -delete
-        echo "{{.GREEN}}✓ Очистка завершена{{.NC}}"
+      - echo "Запуск тестов с race detector..."
+      - go test -race -v ./...
 
-  clean-data:
-    desc: Удалить данные блокчейна (ОСТОРОЖНО!)
+  bench:
+    desc: Запустить бенчмарки
     cmds:
-      - |
-        echo "{{.RED}}ВНИМАНИЕ: Это удалит все данные блокчейна!{{.NC}}"
-        read -p "Вы уверены? [y/N] " -n 1 -r
-        echo
-        if [[ $$REPLY =~ ^[Yy]$$ ]]; then
-          rm -rf {{.DATA_DIR}}
-          echo "{{.GREEN}}✓ Данные удалены{{.NC}}"
-        else
-          echo "{{.CYAN}}Отменено{{.NC}}"
-        fi
+      - echo "Запуск бенчмарков..."
+      - go test -bench=. -benchmem ./...
+
+  # =====================================================================
+  # КАЧЕСТВО КОДА
+  # =====================================================================
 
   fmt:
     desc: Форматировать код
     cmds:
-      - |
-        echo "{{.CYAN}}Форматирование кода...{{.NC}}"
-        go fmt ./...
-        if command -v templ &> /dev/null; then
-          templ fmt .
-        fi
-        echo "{{.GREEN}}✓ Форматирование завершено{{.NC}}"
+      - echo "Форматирование кода..."
+      - go fmt ./...
+      - templ fmt .
+      - echo "✓ Код отформатирован"
 
   lint:
     desc: Проверить код линтером
     cmds:
-      - |
-        echo "{{.CYAN}}Проверка кода...{{.NC}}"
-        if command -v golangci-lint &> /dev/null; then
-          golangci-lint run
-        else
-          echo "{{.RED}}golangci-lint не установлен{{.NC}}"
-          echo "Установите: https://golangci-lint.run/usage/install/"
-        fi
+      - echo "Проверка кода..."
+      - golangci-lint run
+      - echo "✓ Проверка завершена"
 
-  install-tools:
-    desc: Установить все инструменты разработки
+  vet:
+    desc: Запустить go vet
     cmds:
-      - task: install-templ
-      - |
-        echo "{{.CYAN}}Установка инструментов разработки...{{.NC}}"
-        go install github.com/cosmtrek/air@latest
-        echo "{{.GREEN}}✓ Инструменты установлены{{.NC}}"
+      - echo "Запуск go vet..."
+      - go vet ./...
+
+  check:
+    desc: Полная проверка (fmt + vet + lint + test)
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: test
+      - echo "✓ Все проверки пройдены"
+
+  # =====================================================================
+  # ОЧИСТКА
+  # =====================================================================
+
+  clean:
+    desc: Очистить собранные файлы
+    cmds:
+      - echo "Очистка..."
+      - rm -rf {{.BUILD_DIR}}
+      - rm -rf docs
+      - rm -f coverage.out coverage.html
+      - find . -name "*_templ.go" -type f -delete
+      - echo "✓ Очистка завершена"
+
+  clean-data:
+    desc: Удалить данные блокчейна (ОСТОРОЖНО!)
+    prompt: Это удалит все данные блокчейна. Продолжить?
+    cmds:
+      - rm -rf {{.DATA_DIR}}
+      - echo "✓ Данные удалены"
+
+  # =====================================================================
+  # DOCKER
+  # =====================================================================
 
   docker-build:
     desc: Собрать Docker образ
     cmds:
-      - |
-        echo "{{.CYAN}}Сборка Docker образа...{{.NC}}"
-        docker build -t {{.APP_NAME}}:latest .
-        echo "{{.GREEN}}✓ Docker образ собран{{.NC}}"
+      - echo "Сборка Docker образа..."
+      - docker build -t {{.APP_NAME}}:latest .
+      - echo "✓ Docker образ собран"
 
   docker-run:
     desc: Запустить в Docker
     cmds:
-      - |
-        echo "{{.CYAN}}Запуск в Docker...{{.NC}}"
-        docker run -p {{.PORT}}:{{.PORT}} -v {{.PWD}}/{{.DATA_DIR}}:/app/{{.DATA_DIR}} {{.APP_NAME}}:latest
+      - echo "Запуск в Docker..."
+      - docker run -p {{.PORT}}:{{.PORT}} -v $(pwd)/{{.DATA_DIR}}:/app/{{.DATA_DIR}} {{.APP_NAME}}:latest
+
+  docker-clean:
+    desc: Очистить Docker артефакты
+    cmds:
+      - docker system prune -f
+      - echo "✓ Docker очищен"
+
+  # =====================================================================
+  # УТИЛИТЫ
+  # =====================================================================
 
   backup:
     desc: Создать бэкап данных
     cmds:
+      - mkdir -p backups
+      - tar -czf backups/backup-$(date +%Y%m%d-%H%M%S).tar.gz {{.DATA_DIR}}
+      - echo "✓ Бэкап создан в backups/"
+
+  restore:
+    desc: Восстановить последний бэкап
+    cmds:
       - |
-        echo "{{.CYAN}}Создание бэкапа...{{.NC}}"
-        mkdir -p backups
-        tar -czf backups/backup-$$(date +%Y%m%d-%H%M%S).tar.gz {{.DATA_DIR}}
-        echo "{{.GREEN}}✓ Бэкап создан в backups/{{.NC}}"
+        LATEST=$(ls -t backups/*.tar.gz | head -1)
+        if [ -n "$LATEST" ]; then
+          tar -xzf "$LATEST"
+          echo "✓ Восстановлено из: $LATEST"
+        else
+          echo "✗ Бэкапы не найдены"
+        fi
 
   stats:
     desc: Показать статистику проекта
     cmds:
-      - |
-        echo "{{.CYAN}}Статистика проекта:{{.NC}}"
-        echo "  Всего строк Go кода:"
-        find . -name "*.go" -not -path "./vendor/*" | xargs wc -l | tail -1
-        echo "  Всего файлов Templ:"
-        find . -name "*.templ" | wc -l
-        echo "  Размер данных:"
-        if [ -d "{{.DATA_DIR}}" ]; then
-          du -sh {{.DATA_DIR}}
-        else
-          echo "  Нет данных"
-        fi
+      - echo "=== Статистика проекта ==="
+      - echo "Строк кода (Go):"
+      - find . -name "*.go" -not -path "./vendor/*" -not -name "*_templ.go" | xargs wc -l | tail -1
+      - echo "Строк кода (Templ):"
+      - find . -name "*.templ" | xargs wc -l | tail -1
+      - echo "Файлов Go:"
+      - find . -name "*.go" -not -path "./vendor/*" -not -name "*_templ.go" | wc -l
+      - echo "Файлов Templ:"
+      - find . -name "*.templ" | wc -l
 
-  logs:
-    desc: Показать последние логи
+  watch-logs:
+    desc: Следить за логами (если они есть)
     cmds:
-      - |
-        if [ -f "{{.APP_NAME}}.log" ]; then
-          tail -f {{.APP_NAME}}.log
-        else
-          echo "{{.RED}}Файл логов не найден{{.NC}}"
-        fi
+      - tail -f logs/*.log
+
+  # =====================================================================
+  # SWAGGER
+  # =====================================================================
+
+  swagger-serve:
+    desc: Сгенерировать swagger и запустить сервер
+    cmds:
+      - task: swagger
+      - task: run
+
+  swagger-validate:
+    desc: Валидировать Swagger спецификацию
+    cmds:
+      - echo "Валидация Swagger..."
+      - swagger validate docs/swagger.yaml
+      - echo "✓ Swagger спецификация валидна"
+
+  # =====================================================================
+  # PRODUCTION
+  # =====================================================================
+
+  prod-build:
+    desc: Собрать для production
+    cmds:
+      - echo "Сборка для production..."
+      - task: generate
+      - mkdir -p {{.BUILD_DIR}}
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(git describe --tags --always)" -o {{.BUILD_DIR}}/{{.APP_NAME}}-linux-amd64 {{.MAIN_FILE}}
+      - CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(git describe --tags --always)" -o {{.BUILD_DIR}}/{{.APP_NAME}}-windows-amd64.exe {{.MAIN_FILE}}
+      - CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=$(git describe --tags --always)" -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-amd64 {{.MAIN_FILE}}
+      - CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w -X main.version=$(git describe --tags --always)" -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-arm64 {{.MAIN_FILE}}
+      - echo "✓ Production builds готовы"
+
+  # =====================================================================
+  # GIT
+  # =====================================================================
+
+  pre-commit:
+    desc: Проверки перед коммитом
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: test
+      - echo "✓ Готово к коммиту"

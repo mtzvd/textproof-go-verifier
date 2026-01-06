@@ -12,8 +12,48 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "blockchain-verifier/docs" // Swagger документация (будет сгенерирована)
 )
 
+// @title           TextProof API
+// @version         1.0
+// @description     API для системы подтверждения авторства текстов с использованием blockchain
+// @description     TextProof - это система для регистрации и верификации авторства текстовых документов через блокчейн с Proof-of-Work.
+//
+// @contact.name   Georgiy Agafonov
+// @contact.email  info@web-n-roll.pl
+// @contact.url    https://github.com/mtzvd/textproof-go-verifier
+//
+// @license.name  MIT
+// @license.url   https://github.com/mtzvd/textproof-go-verifier/blob/main/LICENSE
+//
+// @host      localhost:8080
+// @BasePath  /
+//
+// @schemes   http https
+//
+// @tag.name         Deposit
+// @tag.description  Операции депонирования (регистрации) текстов в блокчейне
+//
+// @tag.name         Verify
+// @tag.description  Операции проверки и верификации текстов
+//
+// @tag.name         Stats
+// @tag.description  Статистика и информация о блокчейне
+//
+// @tag.name         Utils
+// @tag.description  Вспомогательные утилиты (QR-коды, badges)
+//
+// #Endpoints
+// @description     Доступные конечные точки API:
+// @description     - POST /api/v1/deposit - Регистрация текста
+// @description     - POST /api/v1/verify/id - Проверка по ID
+// @description     - POST /api/v1/verify/text - Проверка по тексту
+// @description     - GET /api/v1/stats - Статистика
+//
+// @externalDocs.description  GitHub Repository
+// @externalDocs.url          https://github.com/mtzvd/textproof-go-verifier
 func main() {
 	// Загружаем конфигурацию
 	cfg := config.DefaultConfig()
@@ -96,80 +136,60 @@ func main() {
 		fmt.Printf("  • Главная: http://localhost:%d/\n", cfg.Port)
 		fmt.Printf("  • Депонирование: http://localhost:%d/deposit\n", cfg.Port)
 		fmt.Printf("  • Проверка: http://localhost:%d/verify\n", cfg.Port)
+		fmt.Printf("  • Swagger UI: http://localhost:%d/swagger/index.html\n", cfg.Port)
 		fmt.Println("\nНажмите Ctrl+C для остановки")
-		fmt.Println()
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Ошибка сервера: %v", err)
+			log.Fatalf("Не удалось запустить сервер: %v", err)
 		}
 	}()
 
-	// Ожидание сигнала завершения
+	// Ожидание сигнала остановки
 	<-stop
-	fmt.Println("\n=== Остановка сервера ===")
+	fmt.Println("\n=== Получен сигнал остановки ===")
 
-	// Graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Graceful shutdown с таймаутом 10 секунд
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	fmt.Println("Останавливаем сервер...")
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("Ошибка при остановке сервера: %v", err)
-	} else {
-		fmt.Println("✓ Сервер корректно остановлен")
 	}
+
+	fmt.Println("✓ Сервер остановлен")
 }
 
-// runTestScenario выполняет тестовый сценарий
+// runTestScenario запускает тестовый сценарий для проверки работы блокчейна
 func runTestScenario(bc *blockchain.Blockchain) error {
-	fmt.Println("=== Запуск тестового сценария ===")
-
-	info := bc.GetChainInfo()
-	if info["length"].(int) > 1 {
-		fmt.Println("В цепочке уже есть блоки. Пропускаем тестовое добавление.")
-		return nil
+	// Тестовые данные
+	testDeposits := []blockchain.DepositData{
+		{
+			AuthorName:  "Александр Пушкин",
+			Title:       "Евгений Онегин",
+			TextStart:   "Мой дядя самых",
+			TextEnd:     "достойнейших правил когда",
+			ContentHash: "abc123def456",
+			PublicKey:   "",
+		},
+		{
+			AuthorName:  "Лев Толстой",
+			Title:       "Война и мир",
+			TextStart:   "Все счастливые семьи",
+			TextEnd:     "похожи друг на",
+			ContentHash: "xyz789uvw012",
+			PublicKey:   "",
+		},
 	}
 
-	fmt.Println("1. Добавляем тестовый блок...")
-	data1 := blockchain.DepositData{
-		AuthorName:  "Иван Иванов",
-		Title:       "Мой первый пост",
-		TextStart:   "Это начало моего",
-		TextEnd:     "конец моего текста",
-		ContentHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-		PublicKey:   "ssh-rsa AAAAB3NzaC1yc2E...",
+	// Добавляем блоки
+	for i, data := range testDeposits {
+		fmt.Printf("Добавление тестового блока %d/%d...\n", i+1, len(testDeposits))
+		_, err := bc.AddBlock(data)
+		if err != nil {
+			return fmt.Errorf("не удалось добавить блок: %w", err)
+		}
 	}
 
-	start := time.Now()
-	block1, err := bc.AddBlock(data1)
-	if err != nil {
-		return fmt.Errorf("не удалось добавить первый блок: %v", err)
-	}
-	fmt.Printf("  ✓ Блок добавлен за %v\n", time.Since(start))
-	fmt.Printf("    ID: %s\n", block1.ID)
-	fmt.Printf("    Хеш: %s\n", block1.Hash)
-	fmt.Printf("    Nonce: %d\n", block1.Nonce)
-
-	fmt.Println("\n2. Добавляем второй тестовый блок...")
-	data2 := blockchain.DepositData{
-		AuthorName:  "Петр Петров",
-		Title:       "Статья о блокчейне",
-		TextStart:   "Блокчейн это технология",
-		TextEnd:     "будущее за децентрализацией",
-		ContentHash: "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
-		PublicKey:   "",
-	}
-
-	start = time.Now()
-	block2, err := bc.AddBlock(data2)
-	if err != nil {
-		return fmt.Errorf("не удалось добавить второй блок: %v", err)
-	}
-
-	fmt.Printf("  ✓ Блок добавлен за %v\n", time.Since(start))
-	fmt.Printf("    ID: %s\n", block2.ID)
-	fmt.Printf("    Хеш: %s\n", block2.Hash)
-	fmt.Printf("    Nonce: %d\n", block2.Nonce)
-
-	fmt.Println("\n✓ Тестовый сценарий завершен!")
 	return nil
 }
