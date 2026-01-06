@@ -13,7 +13,8 @@ type Blockchain struct {
 
 	mu sync.RWMutex
 
-	storage *Storage
+	storage      *Storage
+	blockStorage BlockStorage // для тестов
 
 	// индекс для O(1) проверки дубликатов текста
 	contentHashIndex map[string]*Block
@@ -239,9 +240,11 @@ func (bc *Blockchain) AddBlock(data DepositData) (*Block, error) {
 	// Майним блок
 	block.Mine(bc.Difficulty)
 
-	// Записываем в WAL
-	if err := bc.storage.WriteToWAL(block); err != nil {
-		return nil, NewBlockchainError("WAL_WRITE_FAILED", "failed to write block to WAL", err)
+	// Записываем в WAL (только если используется файловое хранилище)
+	if bc.storage != nil {
+		if err := bc.storage.WriteToWAL(block); err != nil {
+			return nil, NewBlockchainError("WAL_WRITE_FAILED", "failed to write block to WAL", err)
+		}
 	}
 
 	// Добавляем блок в цепочку
@@ -252,15 +255,22 @@ func (bc *Blockchain) AddBlock(data DepositData) (*Block, error) {
 		return nil, err
 	}
 
-	// Сохраняем цепочку
-	if err := bc.saveChain(); err != nil {
-		return nil, NewBlockchainError("CHAIN_SAVE_FAILED", "failed to save chain", err)
-	}
+	// Сохраняем блок в хранилище
+	if bc.blockStorage != nil {
+		if err := bc.blockStorage.SaveBlock(block); err != nil {
+			return nil, NewBlockchainError("BLOCK_SAVE_FAILED", "failed to save block", err)
+		}
+	} else if bc.storage != nil {
+		// Сохраняем цепочку
+		if err := bc.saveChain(); err != nil {
+			return nil, NewBlockchainError("CHAIN_SAVE_FAILED", "failed to save chain", err)
+		}
 
-	// Очищаем WAL после успешного сохранения
-	if err := bc.storage.ClearWAL(); err != nil {
-		// Не критическая ошибка
-		// fmt.Printf("Warning: failed to clear WAL: %v\n", err)
+		// Очищаем WAL после успешного сохранения
+		if err := bc.storage.ClearWAL(); err != nil {
+			// Не критическая ошибка
+			// fmt.Printf("Warning: failed to clear WAL: %v\n", err)
+		}
 	}
 
 	return block, nil

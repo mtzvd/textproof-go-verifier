@@ -89,6 +89,13 @@ func (api *API) handleQRCode(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
+	// Проверяем, существует ли блок
+	_, err := api.blockchain.GetBlockByID(id)
+	if err != nil {
+		api.sendError(w, http.StatusNotFound, "Блок не найден", err)
+		return
+	}
+
 	// Создаем URL для проверки
 	baseURL := getBaseURL(r)
 	verifyURL := fmt.Sprintf("%s/verify/%s", baseURL, id)

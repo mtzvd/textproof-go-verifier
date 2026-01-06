@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"blockchain-verifier/internal/viewmodels"
@@ -18,7 +19,7 @@ func setFlash(w http.ResponseWriter, flashType, message string, data map[string]
 	// Создаём cookie который живёт только до следующего запроса
 	cookie := &http.Cookie{
 		Name:     "flash_type",
-		Value:    flashType,
+		Value:    base64.StdEncoding.EncodeToString([]byte(flashType)),
 		Path:     "/",
 		MaxAge:   60, // 60 секунд (достаточно для редиректа)
 		HttpOnly: true,
@@ -28,7 +29,7 @@ func setFlash(w http.ResponseWriter, flashType, message string, data map[string]
 
 	cookie = &http.Cookie{
 		Name:     "flash_message",
-		Value:    message,
+		Value:    base64.StdEncoding.EncodeToString([]byte(message)),
 		Path:     "/",
 		MaxAge:   60,
 		HttpOnly: true,
@@ -41,7 +42,7 @@ func setFlash(w http.ResponseWriter, flashType, message string, data map[string]
 		for key, value := range data {
 			cookie = &http.Cookie{
 				Name:     "flash_" + key,
-				Value:    value,
+				Value:    base64.StdEncoding.EncodeToString([]byte(value)),
 				Path:     "/",
 				MaxAge:   60,
 				HttpOnly: true,
@@ -64,9 +65,13 @@ func getFlash(r *http.Request, w http.ResponseWriter) *FlashMessage {
 		return nil
 	}
 
+	// Декодируем значения из base64
+	flashTypeBytes, _ := base64.StdEncoding.DecodeString(typeCookie.Value)
+	flashMessageBytes, _ := base64.StdEncoding.DecodeString(messageCookie.Value)
+
 	flash := &FlashMessage{
-		Type:    typeCookie.Value,
-		Message: messageCookie.Value,
+		Type:    string(flashTypeBytes),
+		Message: string(flashMessageBytes),
 		Data:    make(map[string]string),
 	}
 
@@ -74,7 +79,8 @@ func getFlash(r *http.Request, w http.ResponseWriter) *FlashMessage {
 	for _, cookie := range r.Cookies() {
 		if len(cookie.Name) > 6 && cookie.Name[:6] == "flash_" && cookie.Name != "flash_type" && cookie.Name != "flash_message" {
 			key := cookie.Name[6:] // убираем префикс "flash_"
-			flash.Data[key] = cookie.Value
+			valueBytes, _ := base64.StdEncoding.DecodeString(cookie.Value)
+			flash.Data[key] = string(valueBytes)
 		}
 	}
 

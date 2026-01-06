@@ -76,7 +76,7 @@ func (b *Block) Mine(difficulty int) {
 	// Пытаемся найти подходящий nonce
 	for {
 		b.Hash = b.CalculateHash()
-		if b.Hash[:difficulty] == prefix {
+		if len(b.Hash) >= difficulty && b.Hash[:difficulty] == prefix {
 			return // Нашли!
 		}
 		b.Nonce++
@@ -105,7 +105,7 @@ func GenesisBlock() *Block {
 		ContentHash: "genesis_hash", // Для генезис-блока особый хеш
 	}
 
-	block := NewBlock("000-000-000", "0", data)
+	block := NewBlock("000-000-000", "", data)
 	block.Hash = block.CalculateHash() // Генезис-блок не требует майнинга
 	return block
 }

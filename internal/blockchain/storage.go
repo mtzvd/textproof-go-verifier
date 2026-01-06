@@ -12,6 +12,14 @@ const (
 	MaxBackups = 5
 )
 
+// BlockStorage интерфейс для хранилища блоков
+type BlockStorage interface {
+	SaveBlock(block *Block) error
+	GetBlock(id string) (*Block, error)
+	GetAllBlocks() ([]*Block, error)
+	Close() error
+}
+
 // Storage управляет файловой системой для блокчейна
 type Storage struct {
 	chainFile string
