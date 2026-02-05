@@ -72,6 +72,19 @@ ol.steps li::before {
     margin: 0 auto;
 }
 
+/* Footer: darken links and text for WCAG AA contrast on #f5f5f5 background */
+.footer {
+    color: #4a4a4a;
+}
+
+.footer a {
+    color: hsl(198, 100%, 28%);
+}
+
+.footer a:hover {
+    color: hsl(198, 100%, 20%);
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
     .navbar-menu {
