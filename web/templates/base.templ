@@ -1,9 +1,10 @@
 package templates
 
 import "blockchain-verifier/web/templates/components"
+import "blockchain-verifier/internal/viewmodels"
 
 templ Base(
-	title string,
+	meta viewmodels.PageMeta,
 	nav components.NavBar,
 	content templ.Component,
 ) {
@@ -12,11 +13,14 @@ templ Base(
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{ title } - TextProof</title>
+			<title>{ meta.Title } - TextProof</title>
+			if meta.Description != "" {
+				<meta name="description" content={ meta.Description }/>
+			}
 			<!-- Bulma CSS -->
-			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"/>
+			<link rel="stylesheet" href="/static/css/bulma.min.css"/>
 			<!-- Font Awesome -->
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+			<link rel="stylesheet" href="/static/css/fontawesome.min.css"/>
 			<!-- Alpine.js -->
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			<!-- Custom CSS -->
@@ -31,11 +35,13 @@ templ Base(
 			<!-- Навигация -->
 			@components.NavBarSection(nav)
 			<!-- Основное содержимое -->
-			<section class="section">
-				<div class="container">
-					@content
-				</div>
-			</section>
+			<main>
+				<section class="section">
+					<div class="container">
+						@content
+					</div>
+				</section>
+			</main>
 			<!-- Футер -->
 			@components.Footer()
 			

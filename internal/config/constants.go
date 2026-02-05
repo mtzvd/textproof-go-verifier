@@ -18,9 +18,9 @@ func GetAppConstants() AppConstants {
 		AppVersion:      "1.0.0",
 		GitHubURL:       "https://github.com/mtzvd/textproof-go-verifier",
 		GitHubIssuesURL: "https://github.com/mtzvd/textproof-go-verifier/issues",
-		ContactEmail:    "privacy@textproof.example.com",
-		LegalEmail:      "legal@textproof.example.com",
-		PrivacyEmail:    "privacy@textproof.example.com",
+		ContactEmail:    "privacy@textproof.ru",
+		LegalEmail:      "legal@textproof.ru",
+		PrivacyEmail:    "privacy@textproof.ru",
 	}
 }
 

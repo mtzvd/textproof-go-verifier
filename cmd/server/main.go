@@ -6,7 +6,7 @@ import (
 	"blockchain-verifier/internal/config"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,17 +21,17 @@ import (
 // @description     API для системы подтверждения авторства текстов с использованием blockchain
 // @description     TextProof - это система для регистрации и верификации авторства текстовых документов через блокчейн с Proof-of-Work.
 //
-// @contact.name   Georgiy Agafonov
-// @contact.email  info@web-n-roll.pl
-// @contact.url    https://github.com/mtzvd/textproof-go-verifier
+// @contact.name   TextProof
+// @contact.email  info@textproof.ru
+// @contact.url    https://textproof.ru
 //
 // @license.name  MIT
 // @license.url   https://github.com/mtzvd/textproof-go-verifier/blob/main/LICENSE
 //
-// @host      localhost:8080
+// @host      textproof.ru
 // @BasePath  /
 //
-// @schemes   http https
+// @schemes   https
 //
 // @tag.name         Deposit
 // @tag.description  Операции депонирования (регистрации) текстов в блокчейне
@@ -60,39 +60,41 @@ func main() {
 	cfg.LoadFromFlags()
 
 	if err := cfg.Validate(); err != nil {
-		log.Fatalf("Ошибка конфигурации: %v", err)
+		slog.Error("Ошибка конфигурации", "error", err)
+		os.Exit(1)
 	}
 
-	// Выводим информацию о конфигурации
-	fmt.Println("=== TextProof Blockchain ===")
-	fmt.Printf("Директория данных: %s\n", cfg.DataDir)
-	fmt.Printf("Порт сервера: %d\n", cfg.Port)
-	fmt.Printf("Сложность майнинга: %d нулей\n", cfg.Difficulty)
-	fmt.Printf("Режим отладки: %v\n", cfg.EnableDebug)
-	fmt.Println()
+	slog.Info("Конфигурация",
+		"data_dir", cfg.DataDir,
+		"port", cfg.Port,
+		"difficulty", cfg.Difficulty,
+		"debug", cfg.EnableDebug,
+	)
 
 	// Создаем хранилище
 	storage, err := blockchain.NewStorage(cfg.DataDir)
 	if err != nil {
-		log.Fatalf("Не удалось создать хранилище: %v", err)
+		slog.Error("Не удалось создать хранилище", "error", err)
+		os.Exit(1)
 	}
 
 	// Создаем блокчейн
 	bc, err := blockchain.NewBlockchain(storage, cfg.Difficulty)
 	if err != nil {
-		log.Fatalf("Не удалось создать блокчейн: %v", err)
+		slog.Error("Не удалось создать блокчейн", "error", err)
+		os.Exit(1)
 	}
 
 	// Выводим информацию о цепочке
 	info := bc.GetChainInfo()
-	fmt.Println("=== Информация о блокчейне ===")
-	fmt.Printf("Длина цепочки: %d блоков\n", info["length"])
-	fmt.Printf("Цепочка валидна: %v\n", info["valid"])
-
-	if lastBlock, ok := info["last_block"]; ok {
-		fmt.Printf("Последний блок: %s\n", lastBlock)
+	logAttrs := []any{
+		"length", info["length"],
+		"valid", info["valid"],
 	}
-	fmt.Println()
+	if lastBlock, ok := info["last_block"]; ok {
+		logAttrs = append(logAttrs, "last_block", lastBlock)
+	}
+	slog.Info("Блокчейн загружен", logAttrs...)
 
 	// Создаем API
 	apiHandler := api.NewAPI(bc)
@@ -113,14 +115,13 @@ func main() {
 
 			info := bc.GetChainInfo()
 			if info["length"].(int) <= 1 {
-				fmt.Println("=== Запуск тестового сценария в фоне ===")
+				slog.Info("Запуск тестового сценария")
 
 				if err := runTestScenario(bc); err != nil {
-					log.Printf("Тестовый сценарий не удался: %v", err)
+					slog.Error("Тестовый сценарий не удался", "error", err)
 				} else {
-					fmt.Println("✓ Тестовый сценарий успешно выполнен")
+					slog.Info("Тестовый сценарий успешно выполнен")
 				}
-				fmt.Println()
 			}
 		}()
 	}
@@ -131,33 +132,28 @@ func main() {
 
 	// Запуск HTTP сервера в горутине
 	go func() {
-		fmt.Printf("=== Запуск HTTP сервера на http://localhost:%d ===\n", cfg.Port)
-		fmt.Println("Доступные страницы:")
-		fmt.Printf("  • Главная: http://localhost:%d/\n", cfg.Port)
-		fmt.Printf("  • Депонирование: http://localhost:%d/deposit\n", cfg.Port)
-		fmt.Printf("  • Проверка: http://localhost:%d/verify\n", cfg.Port)
-		fmt.Printf("  • Swagger UI: http://localhost:%d/swagger/index.html\n", cfg.Port)
-		fmt.Println("\nНажмите Ctrl+C для остановки")
+		slog.Info("HTTP сервер запущен", "addr", fmt.Sprintf("http://localhost:%d", cfg.Port))
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Не удалось запустить сервер: %v", err)
+			slog.Error("Не удалось запустить сервер", "error", err)
+			os.Exit(1)
 		}
 	}()
 
 	// Ожидание сигнала остановки
 	<-stop
-	fmt.Println("\n=== Получен сигнал остановки ===")
+	slog.Info("Получен сигнал остановки")
 
 	// Graceful shutdown с таймаутом 10 секунд
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	fmt.Println("Останавливаем сервер...")
+	slog.Info("Останавливаем сервер...")
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Ошибка при остановке сервера: %v", err)
+		slog.Error("Ошибка при остановке сервера", "error", err)
 	}
 
-	fmt.Println("✓ Сервер остановлен")
+	slog.Info("Сервер остановлен")
 }
 
 // runTestScenario запускает тестовый сценарий для проверки работы блокчейна
@@ -184,7 +180,7 @@ func runTestScenario(bc *blockchain.Blockchain) error {
 
 	// Добавляем блоки
 	for i, data := range testDeposits {
-		fmt.Printf("Добавление тестового блока %d/%d...\n", i+1, len(testDeposits))
+		slog.Info("Добавление тестового блока", "num", i+1, "total", len(testDeposits))
 		_, err := bc.AddBlock(data)
 		if err != nil {
 			return fmt.Errorf("не удалось добавить блок: %w", err)

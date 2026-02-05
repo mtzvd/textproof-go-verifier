@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -21,7 +21,7 @@ import (
 // @Produce      json
 // @Success      200 {object} viewmodels.StatsResponse "Статистика блокчейна"
 // @Failure      500 {object} viewmodels.ErrorResponse "Ошибка получения статистики"
-// @Router       /api/stats [get]
+// @Router       /api/v1/stats [get]
 // handleStats обрабатывает запрос статистики
 func (api *API) handleStats(w http.ResponseWriter, r *http.Request) {
 	allBlocks := api.blockchain.GetAllBlocks()
@@ -54,7 +54,7 @@ func (api *API) handleStats(w http.ResponseWriter, r *http.Request) {
 // @Tags         Stats
 // @Produce      json
 // @Success      200 {object} viewmodels.BlockchainInfoResponse "Информация о блокчейне"
-// @Router       /api/blockchain [get]
+// @Router       /api/v1/blockchain [get]
 // handleBlockchainInfo обрабатывает запрос информации о блокчейне
 func (api *API) handleBlockchainInfo(w http.ResponseWriter, r *http.Request) {
 	info := api.blockchain.GetChainInfo()
@@ -70,6 +70,25 @@ func (api *API) handleBlockchainInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.sendJSON(w, http.StatusOK, resp)
+}
+
+// handleBlockchainExport godoc
+//
+// @Summary      Экспорт блокчейна
+// @Description  Отдаёт полный файл блокчейна в формате JSON для независимой валидации
+// @Tags         Stats
+// @Produce      json
+// @Success      200 {string} string "JSON-файл блокчейна"
+// @Failure      500 {object} viewmodels.ErrorResponse "Файл не найден"
+// @Router       /api/v1/blockchain/export [get]
+func (api *API) handleBlockchainExport(w http.ResponseWriter, r *http.Request) {
+	path := api.blockchain.GetChainFilePath()
+	if path == "" {
+		api.sendError(w, http.StatusInternalServerError, "Blockchain file not available", nil)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	http.ServeFile(w, r, path)
 }
 
 // handleQRCode godoc
@@ -153,7 +172,7 @@ func (api *API) handleBadge(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 
 	if err != nil {
-		log.Printf("Badge render error: %v", err)
+		slog.Error("Badge render error", "error", err)
 		http.Error(w, "Failed to render badge", http.StatusInternalServerError)
 	}
 }

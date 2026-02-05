@@ -16,7 +16,7 @@ func (api *API) handleDocsPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Документация API",
+			viewmodels.PageMeta{Title: "Документация API", Description: "Полное описание эндпоинтов TextProof API для интеграции"},
 			nav,
 			templates.DocsContent(),
 		),

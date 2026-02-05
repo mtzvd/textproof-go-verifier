@@ -1,19 +1,25 @@
 package api
 
 import (
+	"io/fs"
 	"net/http"
+	"time"
 
 	"blockchain-verifier/internal/blockchain"
+	"blockchain-verifier/web"
 
 	"github.com/gorilla/mux"
 
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	"golang.org/x/time/rate"
 )
 
 const (
 	MaxTextLength   = 1_000_000
 	MaxAuthorLength = 200
 	MaxTitleLength  = 500
+	MaxBodySize     = 2 << 20 // 2MB
 )
 
 // API представляет собой HTTP API сервер
@@ -34,6 +40,13 @@ func NewAPI(bc *blockchain.Blockchain) *API {
 
 // setupRoutes настраивает маршруты API
 func (api *API) setupRoutes() {
+	// Глобальные middleware
+	api.router.Use(securityHeaders)
+	api.router.Use(corsMiddleware)
+
+	// Rate limiter для POST-эндпоинтов (~10 req/min per IP)
+	rl := newIPRateLimiter(rate.Every(6*time.Second), 10)
+
 	// Web UI routes
 	api.router.HandleFunc("/", api.handleHome).Methods("GET")
 	api.router.HandleFunc("/deposit", api.handleDepositPage).Methods("GET")
@@ -45,25 +58,25 @@ func (api *API) setupRoutes() {
 	api.router.HandleFunc("/privacy", api.handlePrivacyPage).Methods("GET")
 	api.router.HandleFunc("/terms", api.handleTermsPage).Methods("GET")
 	api.router.HandleFunc("/docs", api.handleDocsPage).Methods("GET")
-	// API routes
-	api.router.HandleFunc("/api/deposit", api.handleDeposit).Methods("POST")
-	api.router.HandleFunc("/api/verify/id", api.handleVerifyByIDSubmit).Methods("POST")
-	api.router.HandleFunc("/api/verify/text", api.handleVerifyByTextSubmit).Methods("POST")
-	api.router.HandleFunc("/api/stats", api.handleStats).Methods("GET")
-	api.router.HandleFunc("/api/blockchain", api.handleBlockchainInfo).Methods("GET")
+	// API routes (с rate limiting и ограничением body)
+	api.router.HandleFunc("/api/deposit", rl.middleware(maxBody(MaxBodySize, api.handleDeposit))).Methods("POST")
+	api.router.HandleFunc("/api/verify/id", rl.middleware(maxBody(MaxBodySize, api.handleVerifyByIDSubmit))).Methods("POST")
+	api.router.HandleFunc("/api/verify/text", rl.middleware(maxBody(MaxBodySize, api.handleVerifyByTextSubmit))).Methods("POST")
 	api.router.HandleFunc("/api/qrcode/{id}", api.handleQRCode).Methods("GET")
 	api.router.HandleFunc("/api/badge/{id}", api.handleBadge).Methods("GET")
 
-	// JSON API v1 (PUBLIC API)
-	api.router.HandleFunc("/api/v1/deposit", api.handleDepositJSON).Methods("POST")
-	api.router.HandleFunc("/api/v1/verify/id", api.handleVerifyByIDJSON).Methods("POST")
-	api.router.HandleFunc("/api/v1/verify/text", api.handleVerifyByTextJSON).Methods("POST")
+	// JSON API v1 (PUBLIC API, с rate limiting и ограничением body)
+	api.router.HandleFunc("/api/v1/deposit", rl.middleware(maxBody(MaxBodySize, api.handleDepositJSON))).Methods("POST")
+	api.router.HandleFunc("/api/v1/verify/id", rl.middleware(maxBody(MaxBodySize, api.handleVerifyByIDJSON))).Methods("POST")
+	api.router.HandleFunc("/api/v1/verify/text", rl.middleware(maxBody(MaxBodySize, api.handleVerifyByTextJSON))).Methods("POST")
 	api.router.HandleFunc("/api/v1/stats", api.handleStats).Methods("GET")
 	api.router.HandleFunc("/api/v1/blockchain", api.handleBlockchainInfo).Methods("GET")
+	api.router.HandleFunc("/api/v1/blockchain/export", api.handleBlockchainExport).Methods("GET")
 
-	// Static files
-	fs := http.FileServer(http.Dir("web/static"))
-	api.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	// Static files (embedded)
+	staticSub, _ := fs.Sub(web.StaticFS, "static")
+	fileServer := http.FileServer(http.FS(staticSub))
+	api.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
 
 	// 404 handler
 	api.router.NotFoundHandler = http.HandlerFunc(api.handleNotFound)

@@ -23,7 +23,7 @@ func (api *API) handleDepositPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Депонирование текста",
+			viewmodels.PageMeta{Title: "Депонирование текста", Description: "Зарегистрируйте авторство текста в блокчейне TextProof"},
 			nav,
 			templates.DepositContent(),
 		),
@@ -136,7 +136,7 @@ func (api *API) handleDepositResult(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Результат депонирования",
+			viewmodels.PageMeta{Title: "Результат депонирования", Description: "Информация о зафиксированном тексте в блокчейне TextProof"},
 			nav,
 			templates.DepositResultPage(
 				block.ID,

@@ -37,7 +37,7 @@ templ VerifyResult(result viewmodels.VerificationResponse, flashData viewmodels.
 						<p><strong>ID блока:</strong> <code>{ result.BlockID }</code></p>
 						<p><strong>Дата фиксации:</strong> { result.Timestamp.Format("02.01.2006 15:04:05") }</p>
 						<p><strong>Хеш текста:</strong></p>
-						<code class="is-family-monospace is-size-7">{ result.Hash }</code>
+						<code class="is-family-monospace is-size-7" style="word-break: break-all;">{ result.Hash }</code>
 					</div>
 					<!-- QR-код -->
 					<div class="has-text-centered mt-5">

@@ -14,12 +14,12 @@ templ NavBarSection(nav NavBar) {
 		x-data="{ open: false }"
 	>
 		<div class="navbar-brand">
-			<a class="navbar-item" href="/">
+			<div class="navbar-item" href="#">
 				if nav.Icon != "" {
 					<i class={ nav.Icon + " mr-2" }></i>
 				}
 				{ nav.Brand }
-			</a>
+			</div>
 
 			<a
 				role="button"

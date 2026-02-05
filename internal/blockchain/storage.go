@@ -3,6 +3,7 @@ package blockchain
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -73,7 +74,7 @@ func (s *Storage) CreateBackup() error {
 	// Удаляем старые бэкапы (оставляем только последние 5)
 	if err := s.cleanupOldBackups(); err != nil {
 		// Не критическая ошибка, можно продолжить
-		fmt.Printf("Warning: failed to cleanup old backups: %v\n", err)
+		slog.Warn("Failed to cleanup old backups", "error", err)
 	}
 
 	return nil
@@ -176,7 +177,7 @@ func (s *Storage) RestoreFromBackup() error {
 		return fmt.Errorf("failed to restore from backup: %v", err)
 	}
 
-	fmt.Printf("Successfully restored from backup: %s\n", latestBackup)
+	slog.Info("Restored from backup", "file", latestBackup)
 	return nil
 }
 
@@ -208,7 +209,7 @@ func (s *Storage) SaveChain(bc *Blockchain) error {
 	// Создаем бэкап перед сохранением
 	if err := s.CreateBackup(); err != nil {
 		// Это не критическая ошибка, можно продолжить
-		fmt.Printf("Warning: failed to create backup: %v\n", err)
+		slog.Warn("Failed to create backup", "error", err)
 	}
 
 	// Сохраняем через временный файл для атомарности

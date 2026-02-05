@@ -357,6 +357,14 @@ func (bc *Blockchain) ValidateChain() bool {
 	return true
 }
 
+// GetChainFilePath возвращает путь к файлу блокчейна
+func (bc *Blockchain) GetChainFilePath() string {
+	if bc.storage == nil {
+		return ""
+	}
+	return bc.storage.GetChainPath()
+}
+
 // GetChainInfo возвращает информацию о цепочке
 func (bc *Blockchain) GetChainInfo() map[string]interface{} {
 	bc.mu.RLock()

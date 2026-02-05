@@ -37,7 +37,7 @@ func (api *API) handleHome(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Главная",
+			viewmodels.PageMeta{Title: "Главная", Description: "TextProof — система подтверждения авторства текстов через блокчейн с Proof-of-Work"},
 			nav,
 			templates.HomeContent(statCards),
 		),
@@ -53,7 +53,7 @@ func (api *API) handleAboutPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"О проекте",
+			viewmodels.PageMeta{Title: "О проекте", Description: "Как работает TextProof — технология блокчейн для защиты авторства текстов"},
 			nav,
 			templates.AboutContent(),
 		),
@@ -69,7 +69,7 @@ func (api *API) handlePrivacyPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Политика конфиденциальности",
+			viewmodels.PageMeta{Title: "Политика конфиденциальности", Description: "Как TextProof обрабатывает и защищает ваши данные"},
 			nav,
 			templates.PrivacyContent(),
 		),
@@ -85,7 +85,7 @@ func (api *API) handleTermsPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Условия использования",
+			viewmodels.PageMeta{Title: "Условия использования", Description: "Условия использования сервиса TextProof"},
 			nav,
 			templates.TermsContent(),
 		),

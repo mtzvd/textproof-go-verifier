@@ -23,7 +23,7 @@ func (api *API) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Проверка текста",
+			viewmodels.PageMeta{Title: "Проверка текста", Description: "Проверьте подлинность текста по ID блока или содержимому"},
 			nav,
 			templates.VerifyContent(flashData),
 		),
@@ -51,7 +51,7 @@ func (api *API) handleVerifyDirectLink(w http.ResponseWriter, r *http.Request) {
 			w,
 			r,
 			templates.Base(
-				"Проверка текста",
+				viewmodels.PageMeta{Title: "Проверка текста", Description: "Проверьте подлинность текста по ID блока или содержимому"},
 				nav,
 				templates.VerifyContent(flashData),
 			),
@@ -77,7 +77,7 @@ func (api *API) handleVerifyDirectLink(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Результат проверки",
+			viewmodels.PageMeta{Title: "Результат проверки", Description: "Результат верификации текста в блокчейне TextProof"},
 			nav,
 			templates.VerifyResult(result, getFlashData(r, w)),
 		),
@@ -188,7 +188,7 @@ func (api *API) handleVerifyResultPage(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		templates.Base(
-			"Результат проверки",
+			viewmodels.PageMeta{Title: "Результат проверки", Description: "Результат верификации текста в блокчейне TextProof"},
 			nav,
 			templates.VerifyResult(result, flashData),
 		),

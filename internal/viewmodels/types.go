@@ -2,6 +2,12 @@ package viewmodels
 
 import "time"
 
+// PageMeta содержит метаданные страницы для <head>
+type PageMeta struct {
+	Title       string
+	Description string
+}
+
 // Запрос на депонирование текста
 type DepositRequest struct {
 	AuthorName string `json:"author_name"`
